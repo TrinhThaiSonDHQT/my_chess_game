@@ -2,11 +2,10 @@ import { io } from 'socket.io-client';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import './HomePage.css';
-import PlayingOptions from '../../../rightSideController/playingOptions/PlayingOptions';
-import Sidebar from '../../../sidebar/Sidebar';
+
 import BoardDefault from '../../../boards/BoardDefault';
 import IPAddress from '../../../../IPAddress';
+import Container from '../Container/Container';
 
 const socket = io.connect(`http://${IPAddress}:3001`);
 
@@ -33,10 +32,9 @@ function HomePage() {
   }, [socket]);
 
   return (
-    <div className="container">
-      <Sidebar />
-      <BoardDefault controllerSide={<PlayingOptions />} />
-    </div>
+    <Container>
+      <BoardDefault />
+    </Container>
   );
 }
 

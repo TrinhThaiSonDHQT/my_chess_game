@@ -1,0 +1,24 @@
+.main_container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  align-items: center;
+  background-color: rgb(48, 46, 43);
+
+  .container {
+
+    .players {
+      // width: 150px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .controller_side {
+      // width: 390px;
+      border-radius: 10px;
+      background-color: rgb(38, 37, 34);
+    }
+  }
+}
