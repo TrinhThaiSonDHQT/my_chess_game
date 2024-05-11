@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faLock, faUser } from '@fortawesome/free-solid-svg-icons';
 import { faEye } from '@fortawesome/free-regular-svg-icons';
 
-import '../SignIn/SignIn.css';
+import '../SignIn/SignIn.module.scss';
 import logo from '../../../images/chess-game-logo.png';
 import { registerUser } from '../redux/apiRequest';
 

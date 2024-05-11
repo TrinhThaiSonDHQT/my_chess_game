@@ -1,13 +1,14 @@
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
+import "bootstrap/dist/css/bootstrap.min.css";
 
-import './Board.css';
+import PlayingOptions from '../rightSideController/playingOptions/PlayingOptions';
 
-function BoardDefault({ controllerSide }) {
+function BoardDefault() {
   const game = new Chess();
   return (
-    <div className="main_container">
-      <div className="chessboard">
+    <div className='row justify-content-around align-items-center h-100'>
+      <div className="col-6 g-0 chessboard">
         <Chessboard
           position={game.fen()}
           boardOrientation="white"
@@ -22,7 +23,10 @@ function BoardDefault({ controllerSide }) {
         />
       </div>
 
-      <div className="controller_side">{controllerSide}</div>
+      {/* controller side */}
+      <div className="col-4 g-0 controller_side">
+        <PlayingOptions />
+      </div>
     </div>
   );
 }

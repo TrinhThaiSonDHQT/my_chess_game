@@ -3,6 +3,7 @@ import { faHandshake, faStar } from '@fortawesome/free-regular-svg-icons';
 import { faGraduationCap } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+
 import './Sidebar.css';
 import logo from '../../images/chess-game-logo.png';
 import avatar from '../../images/default-avatar.jpg';
