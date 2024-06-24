@@ -73,6 +73,7 @@ const handleRegister = async (rawData) => {
 
     // check username, email existing, password contain at leat 6 characters
     if (isExistUsername === false && isExistEmail === false && isCorrectPass) {
+      // insert data into database
       return {
         EM: 'successful register',
         EC: 0,
