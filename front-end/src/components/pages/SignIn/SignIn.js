@@ -7,12 +7,14 @@ import { faEye } from '@fortawesome/free-regular-svg-icons';
 
 import styles from './SignIn.module.scss';
 import logo from '../../../images/chess-game-logo.png';
-import { loginUser } from '../redux/apiRequest';
+import { login } from '../../../controller/apiRequest';
+import { isValiPass } from '../../../controller/validation';
 
 function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showError, setShowError] = useState('');
   const showHidePasswordRef = useRef();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -31,11 +33,17 @@ function SignIn() {
     // prevent reload page from logging in
     e.preventDefault();
 
-    const newUser = {
-      email: email,
-      password: password,
-    };
-    loginUser(newUser, dispatch, navigate);
+    if (isValiPass(password)) {
+      setShowError('')
+
+      const newUser = {
+        email: email,
+        password: password,
+      };
+      login(newUser, dispatch, navigate);
+    } else {
+      setShowError('Email or password is invalidate')
+    }
   };
 
   return (
@@ -58,11 +66,10 @@ function SignIn() {
               placeholder="Email"
               type="email"
               value={email && email}
+              required
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
-          {/* show error */}
-          <div className={styles.showError}></div>
 
           {/* password */}
           <div className={styles.inputGroup}>
@@ -74,6 +81,7 @@ function SignIn() {
                 className={styles.inputGroupInput}
                 placeholder="Password"
                 type="password"
+                required
                 value={password && password}
                 ref={showHidePasswordRef}
                 onChange={(e) => setPassword(e.target.value)}
@@ -91,7 +99,7 @@ function SignIn() {
             </div>
           </div>
           {/* show error */}
-          <div className={styles.showError}></div>
+          <div className={styles.showError}>{showError}</div>
 
           {/* remember password / forget password */}
           <div className={styles.rememberForgetPassword}>

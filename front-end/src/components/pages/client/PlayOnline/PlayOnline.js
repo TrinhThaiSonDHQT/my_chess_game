@@ -12,9 +12,9 @@ import TimeOptions from '../../../rightSideController/timeOptions/TimeOptions';
 import Sidebar from '../../../sidebar/Sidebar';
 import HistoriesAndChats from '../../../rightSideController/HistoriesAndChats/HistoriesAndChats';
 import PlayersSection from '../../../players/PlayersSection';
-import { createAxios } from '../../redux/createInstance';
-import { addNewGame } from '../../redux/apiRequest';
-import { loginSuccess } from '../../redux/authSlice';
+import { createAxios } from '../../../../redux/createInstance';
+import { addNewGame } from '../../../../redux/apiRequest';
+import { loginSuccess } from '../../../../redux/authSlice';
 import IPAddress from '../../../../IPAddress';
 
 const socket = io.connect(`http://${IPAddress}:3001`);

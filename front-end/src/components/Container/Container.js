@@ -1,6 +1,6 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 
-import Sidebar from '../../../sidebar/Sidebar';
+import Sidebar from '../sidebar/Sidebar';
 import './Container.scss';
 
 function Container({ children }) {

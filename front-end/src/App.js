@@ -1,7 +1,5 @@
 import { Routes, Route } from 'react-router-dom';
 
-// import './App.css';
-
 import HomePage from './components/pages/client/HomePage/HomePage';
 import SignUp from './components/pages//SignUp/SignUp';
 import SignIn from './components/pages/SignIn/SignIn';
@@ -14,6 +12,7 @@ function App() {
     <Routes>
       {/* home page - default */}
       <Route path="/" element={<HomePage />} />
+      <Route path="/home" element={<HomePage />} />
       {/* admin */}
       <Route path="/admin" element={<Admin />} />
 

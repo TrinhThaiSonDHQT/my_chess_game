@@ -7,9 +7,10 @@ import { useNavigate } from 'react-router-dom';
 import './Sidebar.css';
 import logo from '../../images/chess-game-logo.png';
 import avatar from '../../images/default-avatar.jpg';
-import { createAxios } from '../pages/redux/createInstance';
-import { logoutUser } from '../pages/redux/apiRequest';
-import { loginSuccess } from '../pages/redux/authSlice';
+import { createAxios } from '../../redux/createInstance';
+import { logoutUser } from '../../redux/apiRequest';
+import { loginSuccess } from '../../redux/authSlice';
+import { logout } from '../../controller/apiRequest';
 
 function Sidebar() {
   const user = useSelector((state) => state.auth.login?.currentUser);
@@ -17,10 +18,11 @@ function Sidebar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const axiosJWT = createAxios(user, dispatch, loginSuccess);
-  
+
   function handleLogout() {
-    logoutUser(idUser, user?.accessToken, dispatch, navigate, axiosJWT);
-  };
+    // logoutUser(idUser, user?.accessToken, dispatch, navigate, axiosJWT);
+    logout(dispatch, navigate);
+  }
 
   return (
     <div className="side_bar">
