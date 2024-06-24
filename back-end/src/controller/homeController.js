@@ -7,5 +7,5 @@ const login = (req, res) => {
 };
 
 module.exports = {
-  homePage
+  homePage, login
 }
