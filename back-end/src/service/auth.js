@@ -1,4 +1,5 @@
 import db from '../models/index';
+const bcrypt = require('bcryptjs');
 
 const checkEmail = async (email) => {
   let user = await db.User.findOne({
@@ -18,28 +19,38 @@ const checkUsername = async (username) => {
   return false;
 };
 
-const checkPassword = async (email, password) => {
-  if (password.length >= 6) return true;
+const checkPassword = (userInputPassword, hashedPassword) => {
+  let isCorrectPass = bcrypt.compareSync(userInputPassword, hashedPassword);
+  if (userInputPassword.length >= 6 && isCorrectPass) return true;
 
-  // let user = await db.User.findOne({
-  //   where: { email: email },
-  // });
-
-  // if (user) {
-
-  // }
   return false;
 };
 
 const handleLogin = async (rawData) => {
   try {
-    // check email existing, correct password (including contain at leat 6 characters)
-    let isExistEmail = await db.User.findAll();
+    let user = await db.User.findOne({
+      where: { email: rawData.email },
+    });
+
+    if (user) {
+      let isCorrectPass = checkPassword(rawData.password, user.password);
+      if (isCorrectPass) {
+        delete user.dataValues.password;
+        delete user.dataValues.createdAt;
+        delete user.dataValues.updatedAt;
+
+        return {
+          EM: 'Login successfully',
+          EC: 0,
+          DT: user.dataValues,
+        };
+      }
+    }
 
     return {
-      EM: 'successful',
-      EC: 0,
-      DT: rawData.email,
+      EM: 'Email or password is invalid!',
+      EC: 1,
+      DT: null,
     };
   } catch (error) {
     return {
@@ -54,7 +65,6 @@ const handleRegister = async (rawData) => {
   try {
     let isExistUsername = await checkUsername(rawData.user_name);
     let isExistEmail = await checkEmail(rawData.email);
-    let isCorrectPass = await checkPassword(rawData.email, rawData.password);
 
     if (isExistUsername === true) {
       return {
@@ -72,8 +82,24 @@ const handleRegister = async (rawData) => {
     }
 
     // check username, email existing, password contain at leat 6 characters
-    if (isExistUsername === false && isExistEmail === false && isCorrectPass) {
-      // insert data into database
+    if (
+      isExistUsername === false &&
+      isExistEmail === false &&
+      rawData.password.length >= 6
+    ) {
+      // insert new user
+      let salt = bcrypt.genSaltSync(10);
+      let hashedPassword = bcrypt.hashSync(rawData.password, salt);
+
+      if (hashedPassword) {
+        await db.User.create({
+          user_name: rawData.user_name,
+          email: rawData.email,
+          password: hashedPassword,
+          id_group: 3,
+        });
+      }
+
       return {
         EM: 'successful register',
         EC: 0,
