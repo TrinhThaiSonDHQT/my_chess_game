@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux';
 import IPAddress from '../../../../IPAddress';
 import { useState, useEffect } from 'react';
 
-const socket = io.connect(`http://${IPAddress}:3001`);
+const socket = io.connect(`http://${IPAddress}:3000`);
 const PlayWithComputer = () => {
   const [game, setGame] = useState(new Chess());
   const [currentTimeout, setCurrentTimeout] = useState();
@@ -39,7 +39,7 @@ const PlayWithComputer = () => {
     const possibleMoves = game.moves();
 
     // exit if the game is over
-    if (game.game_over() || game.in_draw() || possibleMoves.length === 0)
+    if (game.isGameOver() || game.isDraw() || possibleMoves.length === 0)
       return;
 
     const randomIndex = Math.floor(Math.random() * possibleMoves.length);

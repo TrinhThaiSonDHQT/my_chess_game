@@ -105,7 +105,7 @@ function TimeOptions({ playingOptions }) {
             name="Play"
             bg="green"
             onEventClick={playingOptions}
-            option="playOnline"
+            option="play online"
           />
         </div>
 
@@ -115,7 +115,7 @@ function TimeOptions({ playingOptions }) {
             name="Play a Friend"
             bg="dark"
             onEventClick={playingOptions}
-            option="playWithFriend"
+            option="play with friend"
           />
         </div>
       </div>

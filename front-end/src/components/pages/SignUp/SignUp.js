@@ -10,13 +10,13 @@ import 'react-toastify/dist/ReactToastify.css';
 import '../SignIn/SignIn.module.scss';
 import styles from '../SignIn/SignIn.module.scss';
 import logo from '../../../images/chess-game-logo.png';
-import { register } from '../../../controller/apiRequest';
+import { register } from '../../../controller/apiRequest/auth';
 import {
   registerFailed,
   registerStart,
   registerSuccess,
 } from '../../../redux/authSlice';
-import { doubleCheckPass } from '../../../controller/validation';
+import { doubleCheckPass, isValiPass } from '../../../controller/validation';
 
 function SignUp() {
   const [userName, setUserName] = useState('');
@@ -55,38 +55,42 @@ function SignUp() {
   async function handleSignUp(e) {
     e.preventDefault();
 
-    if (doubleCheckPass(password, password2)) {
-      dispath(registerStart());
+    if (isValiPass(password)) {
+      if (doubleCheckPass(password, password2)) {
+        dispath(registerStart());
 
-      const newUser = {
-        user_name: userName,
-        email: email,
-        password: password,
-      };
-      let res = await register(newUser, dispath);
+        const newUser = {
+          user_name: userName,
+          email: email,
+          password: password,
+        };
+        let res = await register(newUser, dispath);
 
-      if (res) {
-        if (res.EC === 1) {
-          setShowError(res.EM);
-          dispath(registerFailed());
-        } else {
-          setShowError('');
-          dispath(registerSuccess());
-          
-          toast.success('Successfully register', {
-            position: 'top-right',
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: 'light',
-          });
-        }
-      } else dispath(registerFailed());
+        if (res) {
+          if (res.EC === 1) {
+            setShowError(res.EM);
+            dispath(registerFailed());
+          } else {
+            setShowError('');
+            dispath(registerSuccess());
+
+            toast.success('Successfully register', {
+              position: 'top-right',
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: 'light',
+            });
+          }
+        } else dispath(registerFailed());
+      } else {
+        setShowError('Re-enter password is not correct!');
+      }
     } else {
-      setShowError('Re-enter password is not correct!');
+      setShowError('Password has to contain at least 6 characters!');
     }
   }
 

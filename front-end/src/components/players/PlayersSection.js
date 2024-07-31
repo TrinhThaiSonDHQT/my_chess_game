@@ -1,86 +1,69 @@
-import { memo, useContext, useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 
 import './PlayersSection.css';
 import defAvatar from '../../images/default-avatar.jpg';
-import { InforOfRoomContext } from '../../components/pages/client/PlayOnline/PlayOnline';
+import { useSelector } from 'react-redux';
 
 let interval;
 const timer = {};
 
-function PlayersSection({ getTimer }) {
-  const [orderOfPlayer, setOrderOfPlayer] = useState('');
-  const [inforOfRoom, setInforOfRoom] = useState({});
-  const [isMyTurn, setIsMyTurn] = useState(false);
-  const [isStartGame, setIsStartGame] = useState(false);
-
+function PlayersSection({ orderOfPlayer, pieceType }) {
+  const [isMyTurn, setIsMyTurn] = useState(null);
   const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
   const [minutesOpp, setMinutesOpp] = useState(0);
   const [secondsOpp, setSecondsOpp] = useState(0);
 
-  const inforOfRoomContext = useContext(InforOfRoomContext);
-
-  // console.log(inforOfRoomContext);
-  useEffect(() => {
-    setInforOfRoom(inforOfRoomContext.inforOfRoom);
-    setOrderOfPlayer(inforOfRoomContext.orderOfPlayer);
-    setIsMyTurn(inforOfRoomContext.isMyTurn);
-    setIsStartGame(inforOfRoomContext.isStartGame);
-  }, [inforOfRoomContext]);
+  const inforOfRoom = useSelector((state) => state.game.roomInfor);
+  // console.log(inforOfRoom);
 
   useEffect(() => {
-    let player, opponent;
-    if (orderOfPlayer === 'player1') {
-      player = 'player1';
-      opponent = 'player2';
-    } else if (orderOfPlayer === 'player2') {
-      player = 'player2';
-      opponent = 'player1';
+    if (pieceType === inforOfRoom.nextTurn) {
+      setIsMyTurn(true);
+    } else {
+      setIsMyTurn(false);
     }
 
-    setMinutes(inforOfRoom?.[player]?.remaindTime?.minutes);
-    setSeconds(inforOfRoom?.[player]?.remaindTime?.seconds);
-    setMinutesOpp(inforOfRoom?.[opponent]?.remaindTime?.minutes);
-    setSecondsOpp(inforOfRoom?.[opponent]?.remaindTime?.seconds);
-  }, [inforOfRoom, orderOfPlayer]);
+    // setMinutes(inforOfRoom?.[player]?.remaindTime?.minutes);
+    // setSeconds(inforOfRoom?.[player]?.remaindTime?.seconds);
+    // setMinutesOpp(inforOfRoom?.[opponent]?.remaindTime?.minutes);
+    // setSecondsOpp(inforOfRoom?.[opponent]?.remaindTime?.seconds);
+  }, [inforOfRoom]);
 
   // coutdown timer
   useEffect(() => {
     // get timer of players
-    timer.minutes = minutes;
-    timer.seconds = seconds;
-    timer.minutesOpp = minutesOpp;
-    timer.secondsOpp = secondsOpp;
-    getTimer(timer);
+    // timer.minutes = minutes;
+    // timer.seconds = seconds;
+    // timer.minutesOpp = minutesOpp;
+    // timer.secondsOpp = secondsOpp;
+    // getTimer(timer);
 
     // coutdown the time of player
-    if (isStartGame === true) {
-      if (isMyTurn) {
-        interval = setInterval(() => {
-          if (Number(seconds) > 0)
-            setSeconds((preValue) => Number(preValue) - 1);
-          else if (Number(minutes) > 0) {
-            setMinutes((preValue) => Number(preValue) - 1);
-            setSeconds(59);
-          }
-        }, 1000);
-        if (Number(seconds) === 0 && Number(minutes === 0)) stopTimer();
-      } else {
-        // coutdown the time of opponent
-        interval = setInterval(() => {
-          if (Number(secondsOpp) > 0)
-            setSecondsOpp((preValue) => Number(preValue) - 1);
-          else if (Number(minutesOpp) > 0) {
-            setMinutesOpp((preValue) => Number(preValue) - 1);
-            setSecondsOpp(59);
-          }
-        }, 1000);
-        if (Number(secondsOpp) === 0 && Number(minutesOpp === 0)) stopTimer();
-      }
+    if (isMyTurn) {
+      interval = setInterval(() => {
+        if (Number(seconds) > 0) setSeconds((preValue) => Number(preValue) - 1);
+        else if (Number(minutes) > 0) {
+          setMinutes((preValue) => Number(preValue) - 1);
+          setSeconds(59);
+        }
+      }, 1000);
+      if (Number(seconds) === 0 && Number(minutes === 0)) stopTimer();
+    } else {
+      // coutdown the time of opponent
+      interval = setInterval(() => {
+        if (Number(secondsOpp) > 0)
+          setSecondsOpp((preValue) => Number(preValue) - 1);
+        else if (Number(minutesOpp) > 0) {
+          setMinutesOpp((preValue) => Number(preValue) - 1);
+          setSecondsOpp(59);
+        }
+      }, 1000);
+      if (Number(secondsOpp) === 0 && Number(minutesOpp === 0)) stopTimer();
     }
 
     return () => clearInterval(interval);
-  }, [isStartGame, isMyTurn, minutes, seconds, minutesOpp, secondsOpp]);
+  }, [isMyTurn, minutes, seconds, minutesOpp, secondsOpp]);
 
   function stopTimer() {
     clearInterval(interval);

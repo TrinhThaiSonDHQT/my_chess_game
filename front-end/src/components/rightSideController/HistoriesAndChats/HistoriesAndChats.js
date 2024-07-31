@@ -1,84 +1,95 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFlag } from '@fortawesome/free-solid-svg-icons';
 
 import './HistoriesAndChats.css';
-import { HistoriesContext } from '../../../components/pages/client/PlayOnline/PlayOnline';
 import VerifyDialog from '../VerifyDialog/VerifyDialog';
 
+var histories = [];
+var historiesLength = 0;
+var messages = [];
+var messagesLength = 0;
 var orderTurn = 1;
 
-function HistoriesAndChats() {
+function HistoriesAndChats({ handleFinishGame }) {
   const [verifyDraw, setVerifyDraw] = useState(false);
   const [verifyAbort, setVerifyAbort] = useState(false);
-
-  // receive histories from PlayOnline page
-  const historiesContext = useContext(HistoriesContext);
-  const histories = historiesContext.histories;
-  const messages = historiesContext.messages;
-  const handleFinishGame = historiesContext.handleFinishGame;
+  const roomInfor = useSelector((state) => state.game.roomInfor);
 
   // get div tag histories
   const historiesSection = document.getElementById('historiesSection');
   // get div tag chat_box-messages
   const chatBox = document.getElementById('chatboxSection');
 
-  // whenever receive new move piece, render it on HistoriesAndChats Section
   useEffect(() => {
-    if (histories.length > 0) {
-      const lastIndex = histories.length - 1;
-      if (lastIndex >= 0) {
-        // get value of the last move piece
-        const lastElement = histories[lastIndex][0].san;
+    if (roomInfor) {
+      // console.log(roomInfor);
+      histories = roomInfor.histories;
+      if (histories.length > historiesLength) {
+        showHistories(histories);
+        historiesLength = histories.length;
+      }
 
-        // remove class "active"
+      messages = roomInfor.messages;
+      if (messages.length > messagesLength) {
+        showMessages(messages);
+        messagesLength = messages.length;
+      }
+    }
+  }, [roomInfor]);
+
+  // show histories
+  const showHistories = (histories) => {
+    if (historiesSection) {
+      const lastIndex = histories.length - 1;
+      // get value of the last move piece
+      const lastElement = histories[lastIndex][0].san;
+
+      // remove class "active"
+      if (lastIndex > 0) {
         const activeClassElements = historiesSection.querySelectorAll(
           '.histories_group .active'
         );
         activeClassElements.forEach((element) => {
           element.classList.remove('active');
         });
+      }
 
-        // if the moveing piece belong to the white player
-        if (lastIndex % 2 === 0) {
-          if (historiesSection) {
-            const historiesGroupSection = document.createElement('div');
-            historiesGroupSection.className = 'histories_group';
-            historiesGroupSection.id = orderTurn.toString();
-            historiesGroupSection.innerHTML = `
-              <span class="histories_group-turn">${orderTurn}.</span>
-              <span class="histories_group-white-turn san active">${lastElement}</span>
-            `;
+      // if the moveing piece belong to the white player
+      if (lastIndex % 2 === 0) {
+        const historiesGroupSection = document.createElement('div');
+        historiesGroupSection.className = 'histories_group';
+        historiesGroupSection.id = orderTurn.toString();
+        historiesGroupSection.innerHTML = `
+          <span class="histories_group-turn">${orderTurn}.</span>
+          <span class="histories_group-white-turn san active">${lastElement}</span>
+        `;
+        historiesSection.appendChild(historiesGroupSection);
+      } else {
+        const historiesGroupSection = document.getElementById(`${orderTurn}`);
 
-            historiesSection.appendChild(historiesGroupSection);
-          }
-        } else {
-          const historiesGroupSection = document.getElementById(`${orderTurn}`);
+        if (historiesGroupSection) {
+          const blackTurnElement = document.createElement('span');
+          blackTurnElement.className = 'histories_group-black-turn san active';
+          blackTurnElement.innerHTML = lastElement;
 
-          if (historiesGroupSection) {
-            const blackTurnElement = document.createElement('span');
-            blackTurnElement.className =
-              'histories_group-black-turn san active';
-            blackTurnElement.innerHTML = lastElement;
-
-            historiesGroupSection.appendChild(blackTurnElement);
-            orderTurn++;
-          }
+          historiesGroupSection.appendChild(blackTurnElement);
+          orderTurn++;
         }
       }
     }
-  }, [histories]);
+  };
 
-  useEffect(() => {
-    if (messages.length > 0) {
-      if (chatBox) {
-        const lastElement = messages[messages.length - 1];
-        const element = document.createElement('p');
-        element.innerHTML = lastElement;
-        chatBox.appendChild(element);
-      }
+  // show messages
+  const showMessages = (messages) => {
+    if (chatBox) {
+      const lastElement = messages[messages.length - 1];
+      const element = document.createElement('p');
+      element.innerHTML = lastElement;
+      chatBox.appendChild(element);
     }
-  }, [messages]);
+  };
 
   // show / hide dialog verify
   function handleVerify(options) {
@@ -113,7 +124,7 @@ function HistoriesAndChats() {
             <VerifyDialog
               message="Do you want to offer a draw?"
               handleChooseOptions={handleChooseOptions}
-              optionAccept="offerDraw"
+              optionAccept="offer draw"
             />
           )}
         </span>
@@ -129,8 +140,8 @@ function HistoriesAndChats() {
                 histories?.length >= 4 ? 'resign' : 'abort'
               }?`}
               handleChooseOptions={handleChooseOptions}
-              optionAccept={`offer${
-                histories?.length >= 4 ? 'Resign' : 'Abort'
+              optionAccept={`offer ${
+                histories?.length >= 4 ? 'resign' : 'abort'
               }`}
             />
           )}
@@ -150,14 +161,11 @@ function HistoriesAndChats() {
         placeholder="Send a message..."
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
-            handleFinishGame('sendMessage', e.target.value);
+            handleFinishGame('send message', e.target.value);
             e.target.value = '';
           }
         }}
       />
-      {/* <div className="chat_box">
-
-      </div> */}
     </div>
   );
 }

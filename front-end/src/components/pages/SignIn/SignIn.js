@@ -7,8 +7,13 @@ import { faEye } from '@fortawesome/free-regular-svg-icons';
 
 import styles from './SignIn.module.scss';
 import logo from '../../../images/chess-game-logo.png';
-import { login } from '../../../controller/apiRequest';
+import { login } from '../../../controller/apiRequest/auth';
 import { isValiPass } from '../../../controller/validation';
+import {
+  loginFailed,
+  loginStart,
+  loginSuccess,
+} from '../../../redux/authSlice';
 
 function SignIn() {
   const [email, setEmail] = useState('');
@@ -29,20 +34,32 @@ function SignIn() {
     });
   }
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     // prevent reload page from logging in
     e.preventDefault();
 
     if (isValiPass(password)) {
-      setShowError('')
+      setShowError('');
+      dispatch(loginStart());
 
       const newUser = {
         email: email,
         password: password,
       };
-      login(newUser, dispatch, navigate);
+
+      let res = await login(newUser, dispatch, navigate);
+      if (res) {
+        if (res.EC === 1) {
+          setShowError(res.EM);
+          dispatch(loginFailed());
+        } else {
+          setShowError('');
+          dispatch(loginSuccess(res.DT));
+          navigate('/');
+        }
+      } else dispatch(loginFailed());
     } else {
-      setShowError('Email or password is invalidate')
+      setShowError('Email or password is invalid');
     }
   };
 
