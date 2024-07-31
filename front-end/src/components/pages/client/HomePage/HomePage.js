@@ -1,13 +1,14 @@
-import { io } from 'socket.io-client';
-import { useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+// import { io } from 'socket.io-client';
+// import { useEffect } from 'react';
+// import { useSelector } from 'react-redux';
+// import { useNavigate } from 'react-router-dom';
+// import axios from 'axios';
 
 import BoardDefault from '../../../boards/BoardDefault';
-import IPAddress from '../../../../IPAddress';
+// import IPAddress from '../../../../IPAddress';
 import Container from '../../../Container/Container';
 
-const socket = io.connect(`http://${IPAddress}:3001`);
+// const socket = io.connect(`http://${IPAddress}:3001`);
 
 function HomePage() {
   // const user = useSelector((state) => state.auth.login?.currentUser);
@@ -30,6 +31,21 @@ function HomePage() {
   //     navigate(data);
   //   });
   // }, [socket]);
+
+  // useEffect(() => {
+  //   const params = {
+  //     fen: 'rnbqkbnr/p1pppppp/1p6/8/8/6P1/PPPPPPBP/RNBQK1NR b KQkq - 1 2',
+  //     depth: 10,
+  //     mode: 'bestmove'
+  //   };
+
+  //   axios
+  //     .get(`https://stockfish.online/api/stockfish.php`, { params })
+  //     .then((res) => {
+  //       console.log(res.data.data);
+  //     })
+  //     .catch((error) => console.log(error));
+  // }, []);
 
   return (
     <Container>

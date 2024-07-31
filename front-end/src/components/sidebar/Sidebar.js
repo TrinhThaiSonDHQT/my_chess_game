@@ -7,17 +7,16 @@ import { useNavigate } from 'react-router-dom';
 import './Sidebar.css';
 import logo from '../../images/chess-game-logo.png';
 import avatar from '../../images/default-avatar.jpg';
-import { createAxios } from '../../redux/createInstance';
-import { logoutUser } from '../../redux/apiRequest';
-import { loginSuccess } from '../../redux/authSlice';
-import { logout } from '../../controller/apiRequest';
+// import { createAxios } from '../../redux/createInstance';
+// import { logoutUser } from '../../redux/apiRequest';
+// import { loginSuccess } from '../../redux/authSlice';
+import { logout } from '../../controller/apiRequest/auth';
 
 function Sidebar() {
-  const user = useSelector((state) => state.auth.login?.currentUser);
-  const idUser = user?._id;
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const axiosJWT = createAxios(user, dispatch, loginSuccess);
+  const user = useSelector((state) => state.auth.login?.currentUser);
+  // const idUser = user?._id;
 
   function handleLogout() {
     // logoutUser(idUser, user?.accessToken, dispatch, navigate, axiosJWT);
@@ -51,7 +50,7 @@ function Sidebar() {
         <>
           <a className="profile" href="/profile">
             <img src={avatar} alt="profile" />
-            <span className="profile_name">{user.username}</span>
+            <span className="profile_name">{user.user_name}</span>
           </a>
           <a className="side_bar-link button sign_up" onClick={handleLogout}>
             Log Out
