@@ -54,17 +54,11 @@ function PlayOnline() {
   // const axiosJWT = createAxios(user, dispath, loginSuccess);
 
   useEffect(() => {
-    // dispath(setRoomInfor(null));
-    // dispath(showMessages(null));
-    // setEndGame(false);
-    // setHistories([]);
-    // navigate('/play/online');
-
     if (!user) {
       navigate('/login');
       return;
     }
-
+   
     if (roomInfor != null) {
       setInforToPlayer(roomInfor);
     } else {
@@ -118,9 +112,11 @@ function PlayOnline() {
     // on start game
     socket.on('startGame', (data) => {
       // console.log(data);
-      dispath(showMessages(null));
       setRoomID(data.roomID);
       setInforToPlayer(data);
+
+      dispath(showMessages(null));
+      dispath(setRoomInfor(data));
     });
 
     // on move piece
@@ -251,6 +247,9 @@ function PlayOnline() {
         let player1 = { ...preValue['player1'] };
         let player2 = { ...preValue['player2'] };
 
+        if(player1.isWon) delete player1.isWon;
+        if(player2.isWon) delete player2.isWon;
+
         if (player1['pieceType'] === 'white') {
           player1['pieceType'] = 'black';
           player2['pieceType'] = 'white';
@@ -264,6 +263,10 @@ function PlayOnline() {
           player1,
           player2,
         };
+
+        const player = getPlayer(newRoomInfor, 'id', user?.id);
+        setPieceType(newRoomInfor[player].pieceType);
+        setIsMyTurn(newRoomInfor[player].pieceType === 'white' ? true : false);
         dispath(setRoomInfor(newRoomInfor));
         return preValue;
       });
@@ -289,6 +292,7 @@ function PlayOnline() {
     if (data.state != null) {
       setEndGame(true);
     }
+    setRoomID(data.roomID);
     movePiece(data);
 
     setControllerSide(
