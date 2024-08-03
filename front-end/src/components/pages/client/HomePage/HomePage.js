@@ -3,14 +3,24 @@
 // import { useSelector } from 'react-redux';
 // import { useNavigate } from 'react-router-dom';
 // import axios from 'axios';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 import BoardDefault from '../../../boards/BoardDefault';
-// import IPAddress from '../../../../IPAddress';
 import Container from '../../../Container/Container';
+import { showMessages, setRoomInfor } from '../../../../redux/gameSlice';
 
 // const socket = io.connect(`http://${IPAddress}:3001`);
-
 function HomePage() {
+  const dispath = useDispatch();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    dispath(setRoomInfor(null));
+    dispath(showMessages(null));
+    navigate('/play/online');
+  }, []);
   // const user = useSelector((state) => state.auth.login?.currentUser);
   // const navigate = useNavigate();
 
