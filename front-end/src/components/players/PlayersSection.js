@@ -1,11 +1,10 @@
 import { memo, useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 
 import './PlayersSection.css';
 import defAvatar from '../../images/default-avatar.jpg';
-import { useSelector } from 'react-redux';
 
 let interval;
-const timer = {};
 
 function PlayersSection({ orderOfPlayer, pieceType }) {
   const [isMyTurn, setIsMyTurn] = useState(null);
@@ -15,13 +14,25 @@ function PlayersSection({ orderOfPlayer, pieceType }) {
   const [secondsOpp, setSecondsOpp] = useState(0);
 
   const inforOfRoom = useSelector((state) => state.game.roomInfor);
-  // console.log(inforOfRoom);
 
   useEffect(() => {
-    if (pieceType === inforOfRoom.nextTurn) {
-      setIsMyTurn(true);
-    } else {
-      setIsMyTurn(false);
+    if (pieceType != null) {
+      setIsMyTurn(pieceType === 'white' ? true : false);
+    }
+  }, [pieceType]);
+
+  useEffect(() => {
+    if (inforOfRoom) {
+      if (inforOfRoom.state === 'new game') {
+        setMinutes(10);
+        setSeconds(0);
+        setMinutesOpp(10);
+        setSecondsOpp(0);
+      } else if (inforOfRoom.state === 'finish') {
+        stopTimer();
+        return;
+      }
+      setIsMyTurn(pieceType === inforOfRoom.nextTurn ? true : false);
     }
 
     // setMinutes(inforOfRoom?.[player]?.remaindTime?.minutes);
@@ -32,13 +43,6 @@ function PlayersSection({ orderOfPlayer, pieceType }) {
 
   // coutdown timer
   useEffect(() => {
-    // get timer of players
-    // timer.minutes = minutes;
-    // timer.seconds = seconds;
-    // timer.minutesOpp = minutesOpp;
-    // timer.secondsOpp = secondsOpp;
-    // getTimer(timer);
-
     // coutdown the time of player
     if (isMyTurn) {
       interval = setInterval(() => {
@@ -67,104 +71,49 @@ function PlayersSection({ orderOfPlayer, pieceType }) {
 
   function stopTimer() {
     clearInterval(interval);
-    // console.log('end game');
   }
 
   return (
     <div className="players">
-      {orderOfPlayer === 'player1' ? (
-        <>
-          <div className="player_infor">
-            <div className="player_infor-avatar">
-              <img src={defAvatar} alt="avatar" />
-            </div>
-            <div>
-              <div className="player_infor-name">
-                <span>{inforOfRoom?.['player2']?.name}</span>
-              </div>
-              <div
-                className={`time ${
-                  inforOfRoom?.['player2']?.isMyTurn ? 'onPlay' : 'onPause'
-                }`}
-              >{`${
-                minutesOpp < 10
-                  ? String(minutesOpp).padStart(2, '0')
-                  : minutesOpp
-              } : ${
-                secondsOpp < 10
-                  ? String(secondsOpp).padStart(2, '0')
-                  : secondsOpp
-              }`}</div>
-            </div>
+      <div className="player_infor">
+        <div className="player_infor-avatar">
+          <img src={defAvatar} alt="avatar" />
+        </div>
+        <div>
+          <div className="player_infor-name">
+            <span>
+              {orderOfPlayer === 'player1'
+                ? inforOfRoom?.['player2']?.name
+                : inforOfRoom?.['player1']?.name}
+            </span>
           </div>
+          <div className={`time ${isMyTurn ? 'onPause' : 'onPlay'}`}>{`${
+            minutesOpp < 10 ? String(minutesOpp).padStart(2, '0') : minutesOpp
+          } : ${
+            secondsOpp < 10 ? String(secondsOpp).padStart(2, '0') : secondsOpp
+          }`}</div>
+        </div>
+      </div>
 
-          <div className="player_infor">
-            <div className="player_infor-avatar">
-              <img src={defAvatar} alt="avatar" />
-            </div>
-            <div>
-              <div
-                className={`time ${
-                  inforOfRoom?.['player1']?.isMyTurn ? 'onPlay' : 'onPause'
-                }`}
-              >{`${
-                minutes < 10 ? String(minutes).padStart(2, '0') : minutes
-              } : ${
-                seconds < 10 ? String(seconds).padStart(2, '0') : seconds
-              }`}</div>
-              <div className="player_infor-name">
-                <span>{inforOfRoom?.['player1']?.name}</span>
-              </div>
-            </div>
+      <div className="player_infor">
+        <div className="player_infor-avatar">
+          <img src={defAvatar} alt="avatar" />
+        </div>
+        <div>
+          <div className={`time ${isMyTurn ? 'onPlay' : 'onPause'}`}>{`${
+            minutes < 10 ? String(minutes).padStart(2, '0') : minutes
+          } : ${
+            seconds < 10 ? String(seconds).padStart(2, '0') : seconds
+          }`}</div>
+          <div className="player_infor-name">
+            <span>
+              {orderOfPlayer === 'player1'
+                ? inforOfRoom?.['player1']?.name
+                : inforOfRoom?.['player2']?.name}
+            </span>
           </div>
-        </>
-      ) : (
-        <>
-          <div className="player_infor">
-            <div className="player_infor-avatar">
-              <img src={defAvatar} alt="avatar" />
-            </div>
-            <div>
-              <div className="player_infor-name">
-                <span>{inforOfRoom?.['player1']?.name}</span>
-              </div>
-              <div
-                className={`time ${
-                  inforOfRoom?.['player1']?.isMyTurn ? 'onPlay' : 'onPause'
-                }`}
-              >{`${
-                minutesOpp < 10
-                  ? String(minutesOpp).padStart(2, '0')
-                  : minutesOpp
-              } : ${
-                secondsOpp < 10
-                  ? String(secondsOpp).padStart(2, '0')
-                  : secondsOpp
-              }`}</div>
-            </div>
-          </div>
-
-          <div className="player_infor">
-            <div className="player_infor-avatar">
-              <img src={defAvatar} alt="avatar" />
-            </div>
-            <div>
-              <div
-                className={`time ${
-                  inforOfRoom?.['player2']?.isMyTurn ? 'onPlay' : 'onPause'
-                }`}
-              >{`${
-                minutes < 10 ? String(minutes).padStart(2, '0') : minutes
-              } : ${
-                seconds < 10 ? String(seconds).padStart(2, '0') : seconds
-              }`}</div>
-              <div className="player_infor-name">
-                <span>{inforOfRoom?.['player2']?.name}</span>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+        </div>
+      </div>
     </div>
   );
 }

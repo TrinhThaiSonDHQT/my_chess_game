@@ -26,7 +26,7 @@ function HistoriesAndChats({ handleFinishGame }) {
   useEffect(() => {
     if (roomInfor) {
       // console.log(roomInfor);
-      histories = roomInfor.histories;
+      histories = roomInfor.histories;      
       if (histories.length > historiesLength) {
         showHistories(histories);
         historiesLength = histories.length;
