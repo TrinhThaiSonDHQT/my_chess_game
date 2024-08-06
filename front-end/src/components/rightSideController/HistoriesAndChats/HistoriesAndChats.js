@@ -7,20 +7,21 @@ import './HistoriesAndChats.css';
 import VerifyDialog from '../VerifyDialog/VerifyDialog';
 
 var histories = [];
-var historiesLength = 0;
+var historiesLength;
 var messages = [];
-var messagesLength = 0;
-var orderTurn = 1;
+var messagesLength;
+var orderTurn;
 
 function HistoriesAndChats({ handleFinishGame }) {
   const [verifyDraw, setVerifyDraw] = useState(false);
   const [verifyAbort, setVerifyAbort] = useState(false);
   const roomInfor = useSelector((state) => state.game.roomInfor);
 
-  // get div tag histories
-  const historiesSection = document.getElementById('historiesSection');
-  // get div tag chat_box-messages
-  const chatBox = document.getElementById('chatboxSection');
+  useEffect(() => {
+    historiesLength = 0;
+    messagesLength = 0;
+    orderTurn = 1;
+  }, []);
 
   useEffect(() => {
     if (roomInfor) {
@@ -41,48 +42,68 @@ function HistoriesAndChats({ handleFinishGame }) {
 
   // show histories
   const showHistories = (histories) => {
+    // get div tag histories
+    const historiesSection = document.getElementById('historiesSection');
     if (historiesSection) {
-      const lastIndex = histories.length - 1;
-      // get value of the last move piece
-      const lastElement = histories[lastIndex][0].san;
-
-      // remove class "active"
-      if (lastIndex > 0) {
-        const activeClassElements = historiesSection.querySelectorAll(
-          '.histories_group .active'
-        );
-        activeClassElements.forEach((element) => {
-          element.classList.remove('active');
+      let childNodes = historiesSection.childNodes;
+      // when user reconnect, we will render all histories instead of each one
+      if (childNodes.length === 0) {
+        histories.forEach((item, index) => {
+          let position = item[0]['to'];
+          showMove(index, position, historiesSection);
+          removeActiveClass(historiesSection);
         });
-      }
-
-      // if the moveing piece belong to the white player
-      if (lastIndex % 2 === 0) {
-        const historiesGroupSection = document.createElement('div');
-        historiesGroupSection.className = 'histories_group';
-        historiesGroupSection.id = orderTurn.toString();
-        historiesGroupSection.innerHTML = `
-          <span class="histories_group-turn">${orderTurn}.</span>
-          <span class="histories_group-white-turn san active">${lastElement}</span>
-        `;
-        historiesSection.appendChild(historiesGroupSection);
       } else {
-        const historiesGroupSection = document.getElementById(`${orderTurn}`);
-
-        if (historiesGroupSection) {
-          const blackTurnElement = document.createElement('span');
-          blackTurnElement.className = 'histories_group-black-turn san active';
-          blackTurnElement.innerHTML = lastElement;
-
-          historiesGroupSection.appendChild(blackTurnElement);
-          orderTurn++;
+        const lastIndex = histories.length - 1;
+        // get value of the last move piece
+        const position = histories[lastIndex][0].san;
+        // remove class "active"
+        if (lastIndex > 0) {
+          removeActiveClass(historiesSection);
         }
+        showMove(lastIndex, position, historiesSection);
       }
     }
   };
 
+  const showMove = (index, position, parent) => {
+    // if the moveing piece belong to the white player
+    if (index % 2 === 0) {
+      const historiesGroupSection = document.createElement('div');
+      historiesGroupSection.className = 'histories_group';
+      historiesGroupSection.id = orderTurn.toString();
+      historiesGroupSection.innerHTML = `
+        <span class="histories_group-turn">${orderTurn}.</span>
+        <span class="histories_group-white-turn san active">${position}</span>
+      `;
+      parent.appendChild(historiesGroupSection);
+    } else {
+      const historiesGroupSection = document.getElementById(`${orderTurn}`);
+
+      if (historiesGroupSection) {
+        const blackTurnElement = document.createElement('span');
+        blackTurnElement.className = 'histories_group-black-turn san active';
+        blackTurnElement.innerHTML = position;
+
+        historiesGroupSection.appendChild(blackTurnElement);
+        orderTurn++;
+      }
+    }
+  };
+
+  const removeActiveClass = (parent) => {
+    const activeClassElements = parent.querySelectorAll(
+      '.histories_group .active'
+    );
+    activeClassElements.forEach((element) => {
+      element.classList.remove('active');
+    });
+  };
+
   // show messages
   const showMessages = (messages) => {
+    // get div tag chat_box-messages
+    var chatBox = document.getElementById('chatboxSection');
     if (chatBox) {
       const lastElement = messages[messages.length - 1];
       const element = document.createElement('p');

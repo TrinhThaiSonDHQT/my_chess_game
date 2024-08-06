@@ -50,7 +50,7 @@ function PlayOnline() {
       navigate('/login');
       return;
     }
-
+   
     if (roomInfor != null) {
       setInforToPlayer(roomInfor);
     } else {
@@ -69,8 +69,8 @@ function PlayOnline() {
     // on start game
     socket.on('startGame', (data) => {
       // console.log(data);
-      setInforToPlayer(data);
       setRoomID(data.roomID);
+      setInforToPlayer(data);
       dispath(showMessages(null));
       dispath(setRoomInfor(data));
     });
@@ -207,9 +207,10 @@ function PlayOnline() {
       setRoomInforCopy((preValue) => {
         let player1 = { ...preValue['player1'] };
         let player2 = { ...preValue['player2'] };
-
+        
         if (player1.isWon) delete player1.isWon;
         if (player2.isWon) delete player2.isWon;
+
 
         if (player1['pieceType'] === 'white') {
           player1['pieceType'] = 'black';
@@ -255,6 +256,7 @@ function PlayOnline() {
     if (data.state === 'finish') {
       setEndGame(true);
     }
+    setRoomID(data.roomID);
     movePiece(data);
 
     setControllerSide(

@@ -2,6 +2,9 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 // import { useNavigate } from 'react-router-dom';
 // import axios from 'axios';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 import BoardDefault from '../../../boards/BoardDefault';
 import Container from '../../../Container/Container';
@@ -9,7 +12,6 @@ import { showMessages, setRoomInfor } from '../../../../redux/gameSlice';
 
 function HomePage() {
   const dispath = useDispatch();
-
   useEffect(() => {
     dispath(showMessages(null));
     dispath(setRoomInfor(null));
