@@ -51,6 +51,7 @@ const handlePlayOnline = (io, socket, data) => {
         avatar: null,
         pieceType: 'white',
       },
+      state: 'new game',
       fen: null,
       nextTurn: 'white',
       remainTime: null,
