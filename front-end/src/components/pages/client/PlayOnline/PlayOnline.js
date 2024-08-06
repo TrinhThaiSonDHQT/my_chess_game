@@ -13,9 +13,8 @@ import TimeOptions from '../../../rightSideController/timeOptions/TimeOptions';
 import Sidebar from '../../../sidebar/Sidebar';
 import HistoriesAndChats from '../../../rightSideController/HistoriesAndChats/HistoriesAndChats';
 import PlayersSection from '../../../players/PlayersSection';
-import { createAxios } from '../../../../redux/createInstance';
-import { addNewGame } from '../../../../redux/apiRequest';
-import { loginSuccess } from '../../../../redux/authSlice';
+// import { createAxios } from '../../../../redux/createInstance';
+// import { addNewGame } from '../../../../redux/apiRequest';
 import IPAddress from '../../../../IPAddress';
 import { showMessages, setRoomInfor } from '../../../../redux/gameSlice';
 
@@ -28,38 +27,25 @@ function PlayOnline() {
   const [game, setGame] = useState(new Chess());
   const [moveFrom, setMoveFrom] = useState('');
   const [moveTo, setMoveTo] = useState(null);
-  // const [showPromotionDialog, setShowPromotionDialog] = useState(false);
   const [optionSquares, setOptionSquares] = useState({});
-  // const [isStartGame, setIsStartGame] = useState(false);
   const [isEndGame, setEndGame] = useState(false);
-  // const [isWaiting, setIsWaiting] = useState(false);
   const [roomID, setRoomID] = useState('');
   const [roomInforCopy, setRoomInforCopy] = useState(null);
-  const [orderOfPlayer, setOrderOfPlayer] = useState('');
-  const [pieceType, setPieceType] = useState('white');
+  const [orderOfPlayer, setOrderOfPlayer] = useState(null);
+  const [pieceType, setPieceType] = useState(null);
   const [isMyTurn, setIsMyTurn] = useState(true);
   const [controllerSide, setControllerSide] = useState(null);
   const [histories, setHistories] = useState([]);
-  const [minutesOpp, setMinutesOpp] = useState(0);
-  const [secondsOpp, setSecondsOpp] = useState(0);
-  const [minutes, setMinutes] = useState(0);
-  const [seconds, setSeconds] = useState(0);
+  // const [showPromotionDialog, setShowPromotionDialog] = useState(false);
 
   const dispath = useDispatch();
   const navigate = useNavigate();
-
   const user = useSelector((state) => state.auth.login?.currentUser);
   const messages = useSelector((state) => state.game.messages);
   const roomInfor = useSelector((state) => state.game.roomInfor);
   // const axiosJWT = createAxios(user, dispath, loginSuccess);
 
   useEffect(() => {
-    // dispath(setRoomInfor(null));
-    // dispath(showMessages(null));
-    // setEndGame(false);
-    // setHistories([]);
-    // navigate('/play/online');
-
     if (!user) {
       navigate('/login');
       return;
@@ -79,48 +65,14 @@ function PlayOnline() {
     }
   }, [roomInfor]);
 
-  // useEffect(() => {
-  //   if (user) {
-  //     const data = {
-  //       userID: user._id,
-  //       page: 'play online',
-  //     };
-  //     // check the current state of players when they reconnecting
-  //     socket.emit('handleCurrentState', data);
-  //   }
-  // }, [user]);
-
-  // useEffect(() => {
-  //   if (Object.keys(inforOfRoom).length > 0) {
-  //     const remaindTime = {
-  //       minutes: minutes,
-  //       seconds: seconds,
-  //     };
-  //     const remaindTimeOpp = {
-  //       minutes: minutesOpp,
-  //       seconds: secondsOpp,
-  //     };
-  //     const newInforOfRoom = { ...inforOfRoom };
-
-  //     if (orderOfPlayer === 'player1') {
-  //       newInforOfRoom[orderOfPlayer].remaindTime = remaindTime;
-  //       newInforOfRoom['player2'].remaindTime = remaindTimeOpp;
-  //     } else if (orderOfPlayer === 'player2') {
-  //       newInforOfRoom[orderOfPlayer].remaindTime = remaindTime;
-  //       newInforOfRoom['player1'].remaindTime = remaindTimeOpp;
-  //     }
-
-  //     setInforOfRoom(newInforOfRoom);
-  //   }
-  // }, [minutes, seconds, minutesOpp, secondsOpp]);
-
   useEffect(() => {
     // on start game
     socket.on('startGame', (data) => {
       // console.log(data);
-      dispath(showMessages(null));
-      setRoomID(data.roomID);
       setInforToPlayer(data);
+      setRoomID(data.roomID);
+      dispath(showMessages(null));
+      dispath(setRoomInfor(data));
     });
 
     // on move piece
@@ -246,10 +198,18 @@ function PlayOnline() {
 
       reset();
 
-      // change piece type of players
+      setPieceType((preValue) => {
+        let type = preValue === 'white' ? 'black' : 'white';
+        setIsMyTurn(type === 'white' ? true : false);
+        return type;
+      });
+
       setRoomInforCopy((preValue) => {
         let player1 = { ...preValue['player1'] };
         let player2 = { ...preValue['player2'] };
+
+        if (player1.isWon) delete player1.isWon;
+        if (player2.isWon) delete player2.isWon;
 
         if (player1['pieceType'] === 'white') {
           player1['pieceType'] = 'black';
@@ -259,11 +219,17 @@ function PlayOnline() {
           player2['pieceType'] = 'black';
         }
 
+        let nextTurn = 'white';
+        let state = 'new game';
+
         let newRoomInfor = {
           ...preValue,
           player1,
           player2,
+          nextTurn,
+          state,
         };
+
         dispath(setRoomInfor(newRoomInfor));
         return preValue;
       });
@@ -286,7 +252,7 @@ function PlayOnline() {
     const player = getPlayer(data, 'id', user?.id);
     setPieceType(data[player].pieceType);
     setOrderOfPlayer(player);
-    if (data.state != null) {
+    if (data.state === 'finish') {
       setEndGame(true);
     }
     movePiece(data);
@@ -364,38 +330,38 @@ function PlayOnline() {
     });
   }
 
-  function addNewGameToDB(inforOfRoom) {
-    // const game = {
-    //   player1: {
-    //     username: inforOfRoom['player1']['name'],
-    //     pieceType: inforOfRoom['player1']['pieceType'],
-    //   },
-    //   player2: {
-    //     username: inforOfRoom['player2']['name'],
-    //     pieceType: inforOfRoom['player2']['pieceType'],
-    //   },
-    //   wonPlayer: inforOfRoom['pieceTypeWon'],
-    //   moves: histories?.length,
-    //   date: getCurrentDate(),
-    //   history: histories,
-    // };
-    // // console.log(game);
-    // // addNewGame(game, user, user?.accessToken, dispath, axiosJWT);
-    // addNewGame(game, dispath);
-  }
+  // function addNewGameToDB(inforOfRoom) {
+  // const game = {
+  //   player1: {
+  //     username: inforOfRoom['player1']['name'],
+  //     pieceType: inforOfRoom['player1']['pieceType'],
+  //   },
+  //   player2: {
+  //     username: inforOfRoom['player2']['name'],
+  //     pieceType: inforOfRoom['player2']['pieceType'],
+  //   },
+  //   wonPlayer: inforOfRoom['pieceTypeWon'],
+  //   moves: histories?.length,
+  //   date: getCurrentDate(),
+  //   history: histories,
+  // };
+  // // console.log(game);
+  // // addNewGame(game, user, user?.accessToken, dispath, axiosJWT);
+  // addNewGame(game, dispath);
+  // }
 
-  function getCurrentDate() {
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    let mm = today.getMonth() + 1; // Months start at 0!
-    let dd = today.getDate();
+  // function getCurrentDate() {
+  //   const today = new Date();
+  //   const yyyy = today.getFullYear();
+  //   let mm = today.getMonth() + 1; // Months start at 0!
+  //   let dd = today.getDate();
 
-    if (dd < 10) dd = '0' + dd;
-    if (mm < 10) mm = '0' + mm;
+  //   if (dd < 10) dd = '0' + dd;
+  //   if (mm < 10) mm = '0' + mm;
 
-    const formattedToday = dd + '/' + mm + '/' + yyyy;
-    return formattedToday;
-  }
+  //   const formattedToday = dd + '/' + mm + '/' + yyyy;
+  //   return formattedToday;
+  // }
 
   function getMoveOptions(square) {
     // get all possible moves
@@ -598,6 +564,7 @@ function PlayOnline() {
       let nextTurn = data.nextTurn;
       let histories;
       let roomInfor;
+      let state = 'playing';
       setRoomInforCopy((preValue) => {
         roomInfor = preValue;
         return preValue;
@@ -609,6 +576,7 @@ function PlayOnline() {
           fen,
           nextTurn,
           histories,
+          state,
         };
         dispath(setRoomInfor(newRoomInfor));
         return histories;
@@ -709,9 +677,10 @@ function PlayOnline() {
 
       // start a new game
       case 'new game':
-        setEndGame(false);
         dispath(setRoomInfor(null));
+        setEndGame(false);
         reset();
+        setControllerSide(<TimeOptions playingOptions={playingOptions} />);
         setRoomID((preValue) => {
           socket.emit('start new game', preValue);
           return preValue;
@@ -722,6 +691,7 @@ function PlayOnline() {
       // review the game
       // case 'gameReview':
       //   break;
+
       // after opponent denied or received the cancel invitation
       default:
         dispath(showMessages(null));
@@ -729,14 +699,6 @@ function PlayOnline() {
         if (roomInfor.state) setEndGame(true);
         break;
     }
-  }
-
-  function getTimer(timer) {
-    // console.log(timer);
-    setMinutes(timer.minutes);
-    setSeconds(timer.seconds);
-    setMinutesOpp(timer.minutesOpp);
-    setSecondsOpp(timer.secondsOpp);
   }
 
   function handleFinishGame(option, value = null) {
