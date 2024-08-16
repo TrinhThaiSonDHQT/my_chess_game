@@ -6,41 +6,35 @@ const handlePlayOnline = (io, socket, data) => {
 
   var isEmptyRoom = true;
   rooms.forEach((socketIds, room) => {
-    // because whenever each client connect to server, it will automate create a new room (the room ID and the client's socket ID are the same)
-    // so we have to compare the room ID and the client's socket ID.
+    if (socketIds.size >= 2) {
+      socketIds.forEach((item) => {
+        if (typeof item === 'object') {
+          if (item['state'] === 'waiting') {
+            socket.join(room);
 
-    // If they equal(roomID == socketID), it means that no game room is created. So we create new game room and the player has to wait for another one.
+            // add information of another player
+            item.player2 = {
+              id: data.id,
+              name: data.user_name,
+              avater: null,
+              pieceType: 'black',
+            };
 
-    // Otherwise, if there is an available game room(roomID != socketID), the player can join this room and start game.
-    // Note that, if there is an available game room but it already contains two players. So this client has to create new room and wait for another one.
-
-    const socketId = [...socketIds][0];
-    // console.log(socketId);
-    if ((socketId !== room) & (socketIds.size === 2)) {
-      socket.join(room);
-
-      // add information of another player
-      let roomInfor = [...socketIds][1];
-      roomInfor.player2 = {
-        id: data.id,
-        name: data.user_name,
-        avater: null,
-        pieceType: 'black',
-      };
-
-      io.to(room).emit('startGame', roomInfor);
-
-      isEmptyRoom = false;
-      // console.log('after: ', rooms.get(room));
-      return;
+            // change state of game
+            item.state = 'new game';
+            io.to(room).emit('start game', item);
+            isEmptyRoom = false;
+            // console.log('after: ', rooms.get(room));
+            return;
+          }
+        }
+      });
     }
   });
 
   if (isEmptyRoom) {
     const roomID = uuidv4();
-    console.log('create new room');
     socket.join(roomID);
-    // socket.emit('status', 'please wait for another player...');
 
     let room = rooms.get(roomID);
     const roomInfor = {
@@ -51,7 +45,7 @@ const handlePlayOnline = (io, socket, data) => {
         avatar: null,
         pieceType: 'white',
       },
-      state: 'new game',
+      state: 'waiting',
       fen: null,
       nextTurn: 'white',
       remainTime: null,
@@ -59,8 +53,8 @@ const handlePlayOnline = (io, socket, data) => {
       messages: [],
     };
     room.add(roomInfor);
+    console.log('create new room');
   }
-  // console.log(rooms);
 };
 
 const handleMovePiece = (io, data) => {
@@ -103,6 +97,13 @@ const handleStartNewGame = (io, roomID) => {
   io.in(roomID).socketsLeave(roomID);
 };
 
+const handleReConnect = (io, socket, roomID) => {
+  // get all currently rooms
+  const rooms = io.sockets.adapter.rooms;
+  const room = rooms.get(roomID);
+  socket.join(roomID);
+};
+
 export default {
   handlePlayOnline,
   handleMovePiece,
@@ -115,4 +116,5 @@ export default {
   denyRematchGame,
   handleRematchGame,
   handleStartNewGame,
+  handleReConnect,
 };
