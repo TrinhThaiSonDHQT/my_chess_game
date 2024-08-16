@@ -13,8 +13,8 @@ const initialSocket = (app) => {
   });
 
   io.on('connection', (socket) => {
-    // console.log(`User Connected: ${socket.id}`);
-
+    // console.log(`User Connected: ${socket.id}`);  
+    
     // play online
     socket.on('play online', (data) =>
       socketController.handlePlayOnline(io, socket, data)
@@ -68,6 +68,11 @@ const initialSocket = (app) => {
     // on start a new game
     socket.on('start new game', (roomID) => {
       socketController.handleStartNewGame(io, roomID);
+    });
+
+    // on re-connect
+    socket.on('re-connect', (roomID) => {
+      socketController.handleReConnect(io, socket, roomID);
     });
   });
 
