@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFlag } from '@fortawesome/free-solid-svg-icons';
@@ -7,41 +7,18 @@ import './HistoriesAndChats.css';
 import VerifyDialog from '../VerifyDialog/VerifyDialog';
 
 var histories = [];
-var historiesLength;
+var historiesLength = 0;
 var messages = [];
-var messagesLength;
-var orderTurn;
+var messagesLength = 0;
+var orderTurn = 1;
 
 function HistoriesAndChats({ handleFinishGame }) {
   const [verifyDraw, setVerifyDraw] = useState(false);
   const [verifyAbort, setVerifyAbort] = useState(false);
   const roomInfor = useSelector((state) => state.game.roomInfor);
 
-  useEffect(() => {
-    historiesLength = 0;
-    messagesLength = 0;
-    orderTurn = 1;
-  }, []);
-
-  useEffect(() => {
-    if (roomInfor) {
-      // console.log(roomInfor);
-      histories = roomInfor.histories;      
-      if (histories.length > historiesLength) {
-        showHistories(histories);
-        historiesLength = histories.length;
-      }
-
-      messages = roomInfor.messages;
-      if (messages.length > messagesLength) {
-        showMessages(messages);
-        messagesLength = messages.length;
-      }
-    }
-  }, [roomInfor]);
-
   // show histories
-  const showHistories = (histories) => {
+  const showHistories = useCallback((histories) => {
     // get div tag histories
     const historiesSection = document.getElementById('historiesSection');
     if (historiesSection) {
@@ -64,7 +41,24 @@ function HistoriesAndChats({ handleFinishGame }) {
         showMove(lastIndex, position, historiesSection);
       }
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (roomInfor) {
+      // console.log(roomInfor);
+      histories = roomInfor.histories;
+      if (histories.length > historiesLength) {
+        showHistories(histories);
+        historiesLength = histories.length;
+      }
+
+      messages = roomInfor.messages;
+      if (messages.length > messagesLength) {
+        showMessages(messages);
+        messagesLength = messages.length;
+      }
+    }
+  }, [roomInfor, showHistories]);
 
   const showMove = (index, position, parent) => {
     // if the moveing piece belong to the white player
@@ -191,4 +185,4 @@ function HistoriesAndChats({ handleFinishGame }) {
   );
 }
 
-export default HistoriesAndChats;
+export default memo(HistoriesAndChats);

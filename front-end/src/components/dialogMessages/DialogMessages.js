@@ -1,9 +1,10 @@
+import { memo } from 'react';
+
 import CustomButton from '../buttons/CustomButton';
 import './DialogMessages.css';
 function DialogMessages({ messages, infor, handleOptions }) {
   // console.log("messages: ", messages, );
   // console.log("infor: ", infor);
-
   return (
     <div className="dialog_messages">
       <p className={'messages ' + infor?.animation}>{messages}</p>
@@ -24,10 +25,9 @@ function DialogMessages({ messages, infor, handleOptions }) {
             option={infor?.buttonAccept?.option}
           />
         )}
-
       </div>
     </div>
   );
 }
 
-export default DialogMessages;
+export default memo(DialogMessages);

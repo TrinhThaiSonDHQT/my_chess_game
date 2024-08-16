@@ -5,41 +5,28 @@ import './PlayersSection.css';
 import defAvatar from '../../images/default-avatar.jpg';
 
 let interval;
-
-function PlayersSection({ orderOfPlayer, pieceType }) {
-  const [isMyTurn, setIsMyTurn] = useState(null);
+function PlayersSection({ playerOrder, pieceType }) {
+  const [isMyTurn, setIsMyTurn] = useState(false);
   const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
   const [minutesOpp, setMinutesOpp] = useState(0);
   const [secondsOpp, setSecondsOpp] = useState(0);
-
-  const inforOfRoom = useSelector((state) => state.game.roomInfor);
-
-  useEffect(() => {
-    if (pieceType != null) {
-      setIsMyTurn(pieceType === 'white' ? true : false);
-    }
-  }, [pieceType]);
+  const roomInfor = useSelector((state) => state.game.roomInfor);
 
   useEffect(() => {
-    if (inforOfRoom) {
-      if (inforOfRoom.state === 'new game') {
+    if (roomInfor) {
+      if (roomInfor.state === 'new game') {
         setMinutes(10);
         setSeconds(0);
         setMinutesOpp(10);
         setSecondsOpp(0);
-      } else if (inforOfRoom.state === 'finish') {
+      } else if (roomInfor.state === 'finish') {
         stopTimer();
         return;
       }
-      setIsMyTurn(pieceType === inforOfRoom.nextTurn ? true : false);
+      setIsMyTurn(pieceType === roomInfor.nextTurn ? true : false);
     }
-
-    // setMinutes(inforOfRoom?.[player]?.remaindTime?.minutes);
-    // setSeconds(inforOfRoom?.[player]?.remaindTime?.seconds);
-    // setMinutesOpp(inforOfRoom?.[opponent]?.remaindTime?.minutes);
-    // setSecondsOpp(inforOfRoom?.[opponent]?.remaindTime?.seconds);
-  }, [inforOfRoom]);
+  }, [roomInfor, pieceType]);
 
   // coutdown timer
   useEffect(() => {
@@ -82,9 +69,9 @@ function PlayersSection({ orderOfPlayer, pieceType }) {
         <div>
           <div className="player_infor-name">
             <span>
-              {orderOfPlayer === 'player1'
-                ? inforOfRoom?.['player2']?.name
-                : inforOfRoom?.['player1']?.name}
+              {playerOrder === 'player1'
+                ? roomInfor?.['player2']?.name
+                : roomInfor?.['player1']?.name}
             </span>
           </div>
           <div className={`time ${isMyTurn ? 'onPause' : 'onPlay'}`}>{`${
@@ -107,9 +94,9 @@ function PlayersSection({ orderOfPlayer, pieceType }) {
           }`}</div>
           <div className="player_infor-name">
             <span>
-              {orderOfPlayer === 'player1'
-                ? inforOfRoom?.['player1']?.name
-                : inforOfRoom?.['player2']?.name}
+              {playerOrder === 'player1'
+                ? roomInfor?.['player1']?.name
+                : roomInfor?.['player2']?.name}
             </span>
           </div>
         </div>

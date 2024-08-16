@@ -1,9 +1,8 @@
 import { Routes, Route } from 'react-router-dom';
 
-import HomePage from './components/pages/client/HomePage/HomePage';
+import HomePage from './components/pages/HomePage/HomePage';
 import SignUp from './components/pages//SignUp/SignUp';
 import SignIn from './components/pages/SignIn/SignIn';
-import Admin from './components/pages/Admin/Admin';
 import PlayOnline from './components/pages/client/PlayOnline/PlayOnline';
 import PlayWithComputer from './components/pages/client/PlayWithComputer/PlayWithComputer';
 
@@ -13,8 +12,6 @@ function App() {
       {/* home page - default */}
       <Route path="/" element={<HomePage />} />
       <Route path="/home" element={<HomePage />} />
-      {/* admin */}
-      <Route path="/admin" element={<Admin />} />
 
       {/* authentication */}
       <Route path="/signup" element={<SignUp />} />
