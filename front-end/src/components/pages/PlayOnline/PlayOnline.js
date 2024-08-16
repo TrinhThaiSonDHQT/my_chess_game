@@ -1,7 +1,7 @@
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import io from 'socket.io-client';
-import { createContext, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -15,61 +15,57 @@ import HistoriesAndChats from '../../../rightSideController/HistoriesAndChats/Hi
 import PlayersSection from '../../../players/PlayersSection';
 // import { createAxios } from '../../../../redux/createInstance';
 // import { addNewGame } from '../../../../redux/apiRequest';
-import IPAddress from '../../../../IPAddress';
 import { showMessages, setRoomInfor } from '../../../../redux/gameSlice';
 
-const socket = io.connect(`http://${IPAddress}:3001`);
-
-export const HistoriesContext = createContext();
-export const InforOfRoomContext = createContext();
+const socket = io.connect(`http://${process.env.REACT_APP_IP_ADDRESS}:3001`);
+var roomID;
+var moveFrom;
+var moveTo;
+var playerOrder;
+var roomInfor;
+var isMyTurn;
+var histories = [];
 
 function PlayOnline() {
   const [game, setGame] = useState(new Chess());
-  const [moveFrom, setMoveFrom] = useState('');
-  const [moveTo, setMoveTo] = useState(null);
   const [optionSquares, setOptionSquares] = useState({});
   const [isEndGame, setEndGame] = useState(false);
-  const [roomID, setRoomID] = useState('');
-  const [roomInforCopy, setRoomInforCopy] = useState(null);
-  const [orderOfPlayer, setOrderOfPlayer] = useState(null);
   const [pieceType, setPieceType] = useState(null);
-  const [isMyTurn, setIsMyTurn] = useState(true);
   const [controllerSide, setControllerSide] = useState(null);
-  const [histories, setHistories] = useState([]);
-  // const [showPromotionDialog, setShowPromotionDialog] = useState(false);
 
   const dispath = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.login?.currentUser);
   const messages = useSelector((state) => state.game.messages);
-  const roomInfor = useSelector((state) => state.game.roomInfor);
+  const roomInforRedux = useSelector((state) => state.game.roomInfor);
   // const axiosJWT = createAxios(user, dispath, loginSuccess);
 
   useEffect(() => {
+    // direct to login page if the player still not authenticate
     if (!user) {
       navigate('/login');
       return;
     }
-   
-    if (roomInfor != null) {
-      setInforToPlayer(roomInfor);
+
+    // handle when players reconnect or update new information
+    if (roomInforRedux != null) {
+      setInforToPlayer(roomInforRedux);
+      socket.emit('re-connect', roomInforRedux.roomID);
     } else {
       setControllerSide(<TimeOptions playingOptions={playingOptions} />);
     }
   }, []);
 
-  // handle when players reconnect or update new information
   useEffect(() => {
-    if (roomInfor != null) {
-      setRoomInforCopy(roomInfor);
+    if (roomInforRedux != null) {
+      roomInfor = roomInforRedux;
     }
-  }, [roomInfor]);
+  }, [roomInforRedux]);
 
   useEffect(() => {
     // on start game
-    socket.on('startGame', (data) => {
+    socket.on('start game', (data) => {
       // console.log(data);
-      setRoomID(data.roomID);
       setInforToPlayer(data);
       dispath(showMessages(null));
       dispath(setRoomInfor(data));
@@ -83,13 +79,9 @@ function PlayOnline() {
 
     // on send or receive message
     socket.on('send message', (message) => {
-      setRoomInforCopy((preValue) => {
-        let messages = preValue.messages;
-        messages = [...messages, message];
-        let newRoomInfor = { ...preValue, messages };
-        dispath(setRoomInfor(newRoomInfor));
-        return preValue;
-      });
+      let messages = [...roomInfor.messages, message];
+      let newRoomInfor = { ...roomInfor, messages };
+      dispath(setRoomInfor(newRoomInfor));
     });
 
     // on send or receive message
@@ -193,75 +185,53 @@ function PlayOnline() {
 
     // on handle rematch game
     socket.on('handle rematch game', () => {
-      // turn off dialog invitation or waiting
       dispath(showMessages(null));
-
       reset();
-
       setPieceType((preValue) => {
         let type = preValue === 'white' ? 'black' : 'white';
-        setIsMyTurn(type === 'white' ? true : false);
+        isMyTurn = type === 'white' ? true : false;
         return type;
       });
-
-      setRoomInforCopy((preValue) => {
-        let player1 = { ...preValue['player1'] };
-        let player2 = { ...preValue['player2'] };
-        
-        if (player1.isWon) delete player1.isWon;
-        if (player2.isWon) delete player2.isWon;
-
-
-        if (player1['pieceType'] === 'white') {
-          player1['pieceType'] = 'black';
-          player2['pieceType'] = 'white';
-        } else {
-          player1['pieceType'] = 'white';
-          player2['pieceType'] = 'black';
-        }
-
-        let nextTurn = 'white';
-        let state = 'new game';
-
-        let newRoomInfor = {
-          ...preValue,
-          player1,
-          player2,
-          nextTurn,
-          state,
-        };
-
-        dispath(setRoomInfor(newRoomInfor));
-        return preValue;
-      });
-      // reset timer for player
-      // const remaindTime = {
-      //   minutes: 10,
-      //   seconds: 0,
-      // };
-      // const newInforOfRoom = { ...inforOfRoom };
-      // newInforOfRoom['player1'].remaindTime = remaindTime;
-      // newInforOfRoom['player2'].remaindTime = remaindTime;
-      // // console.log(newInforOfRoom);
-      // setInforOfRoom(newInforOfRoom);
-      // setIsStartGame(true);
+      let player1 = { ...roomInfor['player1'] };
+      let player2 = { ...roomInfor['player2'] };
+      if (player1.isWon) delete player1.isWon;
+      if (player2.isWon) delete player2.isWon;
+      if (player1['pieceType'] === 'white') {
+        player1['pieceType'] = 'black';
+        player2['pieceType'] = 'white';
+      } else {
+        player1['pieceType'] = 'white';
+        player2['pieceType'] = 'black';
+      }
+      let nextTurn = 'white';
+      let state = 'new game';
+      let newRoomInfor = {
+        ...roomInfor,
+        player1,
+        player2,
+        nextTurn,
+        state,
+      };
+      dispath(setRoomInfor(newRoomInfor));
     });
   }, [socket]);
 
   function setInforToPlayer(data) {
     // console.log(data);
-    const player = getPlayer(data, 'id', user?.id);
-    setPieceType(data[player].pieceType);
-    setOrderOfPlayer(player);
-    if (data.state === 'finish') {
-      setEndGame(true);
-    }
-    setRoomID(data.roomID);
-    movePiece(data);
+    roomInfor = data;
+    roomID = data.roomID;
 
+    // determine this player is 'player1' or 'player2'
+    let player = getPlayer(data, 'id', user?.id);
+    setPieceType(data[player].pieceType);
+    playerOrder = player;
+    movePiece(data);
     setControllerSide(
       <HistoriesAndChats handleFinishGame={handleFinishGame} />
     );
+    if (data.state === 'finish') {
+      setEndGame(true);
+    }
   }
 
   function safeGameMutate(modify) {
@@ -281,89 +251,47 @@ function PlayOnline() {
   }
 
   function handleEndGame(option = null) {
-    setEndGame(true);
     dispath(showMessages(null));
+    setEndGame(true);
 
     let pieceType;
     setPieceType((preValue) => {
       pieceType = preValue;
 
-      let newRoomInfor;
-      setRoomInforCopy((preValue) => {
-        newRoomInfor = { ...preValue };
-
-        // update state
-        newRoomInfor.state = 'finish';
-        // add new property - pieceTypeWin
-        if (option === 'accept draw invitation')
-          newRoomInfor.pieceTypeWon = 'draw game';
-        else {
-          let playerWon;
-          if (option === 'offer resign' || option === 'offer abort') {
-            let pieceTypeWon = pieceType === 'white' ? 'black' : 'white';
-            newRoomInfor.pieceTypeWon = pieceTypeWon;
-            playerWon = getPlayer(newRoomInfor, 'pieceType', pieceTypeWon);
-          } else {
-            newRoomInfor.pieceTypeWon = pieceType;
-            playerWon = getPlayer(newRoomInfor, 'pieceType', pieceType);
-          }
-          // add property "isWon" for player who won the game
-          if (playerWon === 'player1') {
-            let player1 = { ...newRoomInfor['player1'] };
-            player1.isWon = true;
-            newRoomInfor = { ...newRoomInfor, player1 };
-          } else {
-            let player2 = { ...newRoomInfor['player2'] };
-            player2.isWon = true;
-            newRoomInfor = { ...newRoomInfor, player2 };
-          }
+      var newRoomInfor = { ...roomInfor };
+      newRoomInfor.state = 'finish';
+      if (option === 'accept draw invitation')
+        newRoomInfor.pieceTypeWon = 'draw game';
+      else {
+        let playerWon;
+        if (option === 'offer resign' || option === 'offer abort') {
+          // if the player who is resigned or aborted then he/she will be a loseer
+          let pieceTypeWon = pieceType === 'white' ? 'black' : 'white';
+          newRoomInfor.pieceTypeWon = pieceTypeWon;
+          playerWon = getPlayer(newRoomInfor, 'pieceType', pieceTypeWon);
+        } else {
+          newRoomInfor.pieceTypeWon = pieceType;
+          playerWon = getPlayer(newRoomInfor, 'pieceType', pieceType);
         }
-        // console.log(newRoomInfor);
-
-        // insert infor of game into database
-        // addNewGameToDB(newRoomInfor);
-
-        dispath(setRoomInfor(newRoomInfor));
-        socket.emit('end game', newRoomInfor);
-
-        return preValue;
-      });
+        // add property "isWon" for player who won the game
+        if (playerWon === 'player1') {
+          let player1 = { ...newRoomInfor['player1'] };
+          player1.isWon = true;
+          newRoomInfor = { ...newRoomInfor, player1 };
+        } else {
+          let player2 = { ...newRoomInfor['player2'] };
+          player2.isWon = true;
+          newRoomInfor = { ...newRoomInfor, player2 };
+        }
+      }
+      // console.log(newRoomInfor);
+      // insert infor of game into database
+      // addNewGameToDB(newRoomInfor);
+      dispath(setRoomInfor(newRoomInfor));
+      socket.emit('end game', newRoomInfor);
       return preValue;
     });
   }
-
-  // function addNewGameToDB(inforOfRoom) {
-  // const game = {
-  //   player1: {
-  //     username: inforOfRoom['player1']['name'],
-  //     pieceType: inforOfRoom['player1']['pieceType'],
-  //   },
-  //   player2: {
-  //     username: inforOfRoom['player2']['name'],
-  //     pieceType: inforOfRoom['player2']['pieceType'],
-  //   },
-  //   wonPlayer: inforOfRoom['pieceTypeWon'],
-  //   moves: histories?.length,
-  //   date: getCurrentDate(),
-  //   history: histories,
-  // };
-  // // console.log(game);
-  // // addNewGame(game, user, user?.accessToken, dispath, axiosJWT);
-  // addNewGame(game, dispath);
-  // }
-
-  // function getCurrentDate() {
-  //   const today = new Date();
-  //   const yyyy = today.getFullYear();
-  //   let mm = today.getMonth() + 1; // Months start at 0!
-  //   let dd = today.getDate();
-
-  //   if (dd < 10) dd = '0' + dd;
-  //   if (mm < 10) mm = '0' + mm;
-
-  //   const formattedToday = dd + '/' + mm + '/' + yyyy;
-  //   return formattedToday;
-  // }
 
   function getMoveOptions(square) {
     // get all possible moves
@@ -375,7 +303,6 @@ function PlayOnline() {
     // if the square is empty or the piece on square is protecing the king -> no possible moves
     if (moves.length === 0) {
       let optionSquares = {};
-
       // if square contains piece but hasn't possible moves then still set this square's background to yellow
       if (game.get(square)) {
         optionSquares = {
@@ -436,7 +363,7 @@ function PlayOnline() {
     // from square
     if (!moveFrom) {
       const hasMoveOptions = getMoveOptions(square);
-      if (hasMoveOptions) setMoveFrom(square);
+      if (hasMoveOptions) moveFrom = square;
       return;
     }
 
@@ -451,17 +378,18 @@ function PlayOnline() {
       const foundMove = moves.find(
         (m) => m.from === moveFrom && m.to === square
       );
+
       // not a valid move
       if (!foundMove) {
         // check if clicked on new piece
         const hasMoveOptions = getMoveOptions(square);
         // if new piece, setMoveFrom, otherwise clear moveFrom
-        setMoveFrom(hasMoveOptions ? square : '');
+        moveFrom = hasMoveOptions ? square : '';
         return;
       }
 
       // valid move
-      setMoveTo(square);
+      moveTo = square;
 
       // if promotion move
       if (
@@ -478,13 +406,13 @@ function PlayOnline() {
 
       // is normal move
       const gameCopy = game;
-
       const move = gameCopy.move({
         from: moveFrom,
         to: square,
         promotion: 'q',
       });
 
+      // finish game if it can
       if (checkEndGame()) {
         handleEndGame();
       }
@@ -492,7 +420,7 @@ function PlayOnline() {
       // if invalid, setMoveFrom and getMoveOptions
       if (move === null) {
         const hasMoveOptions = getMoveOptions(square);
-        if (hasMoveOptions) setMoveFrom(square);
+        if (hasMoveOptions) moveFrom = square;
         return;
       }
 
@@ -500,89 +428,56 @@ function PlayOnline() {
       const fen = game.fen();
       const nextTurn = pieceType === 'white' && isMyTurn ? 'black' : 'white';
       const history = gameCopy.history({ verbose: true });
-
       let updateMovePiece = {
         fen,
         nextTurn,
         history,
       };
-
       socket.emit('move piece', { ...updateMovePiece, roomID });
 
+      // reset state of chess board
       setGame(gameCopy);
-      setMoveFrom('');
-      setMoveTo(null);
+      moveFrom = '';
+      moveTo = '';
       setOptionSquares({});
-
       return;
     }
   }
-
-  // function onPromotionPieceSelect(piece) {
-  //   // if no piece passed then user has cancelled dialog, don't make move and reset
-  //   if (piece) {
-  //     const gameCopy = { ...game };
-  //     gameCopy.move({
-  //       from: moveFrom,
-  //       to: moveTo,
-  //       promotion: piece[1].toLowerCase() ?? 'q',
-  //     });
-  //     setGame(gameCopy);
-  //     setTimeout(makeRandomMove, 300);
-  //   }
-
-  //   setMoveFrom('');
-  //   setMoveTo(null);
-  //   // setShowPromotionDialog(false);
-  //   setOptionSquares({});
-  //   return true;
-  // }
 
   function reset() {
     safeGameMutate((game) => {
       game.reset();
     });
     setEndGame(false);
-    setHistories([]);
+    histories = [];
     setOptionSquares({});
   }
 
   function movePiece(data) {
     // console.log(data);
     setPieceType((pieceType) => {
-      setIsMyTurn(data.nextTurn === pieceType ? true : false);
+      isMyTurn = data.nextTurn === pieceType ? true : false;
       return pieceType;
     });
-
     if (data.fen) {
       const gameCopy = game;
       gameCopy.load(data.fen);
       setGame(gameCopy);
     }
-
     if (data.history) {
-      // set the new fen, next turn, remain time, histories, messages in chat box into roomInfor
+      // set the new fen, next turn, remain time, histories, messages in chat box into roomInforRedux
       let fen = data.fen;
       let nextTurn = data.nextTurn;
-      let histories;
-      let roomInfor;
       let state = 'playing';
-      setRoomInforCopy((preValue) => {
-        roomInfor = preValue;
-        return preValue;
-      });
-      setHistories((preValue) => {
-        histories = [...preValue, data.history];
-        let newRoomInfor = {
-          ...roomInfor,
-          fen,
-          nextTurn,
-          histories,
-          state,
-        };
-        dispath(setRoomInfor(newRoomInfor));
-        return histories;
-      });
+      histories = [...histories, data.history];
+      let newRoomInfor = {
+        ...roomInfor,
+        fen,
+        nextTurn,
+        histories,
+        state,
+      };
+      dispath(setRoomInfor(newRoomInfor));
     }
   }
 
@@ -608,7 +503,7 @@ function PlayOnline() {
     socket.emit(option, user);
   }
 
-  function handleOptions(option) {
+  const handleOptions = useCallback((option) => {
     // console.log(option);
     switch (option) {
       // hide the dialog end game
@@ -631,7 +526,7 @@ function PlayOnline() {
       case 'cancel invitation':
         socket.emit('cancel invitation', roomID);
         dispath(showMessages(null));
-        if (roomInfor.state) setEndGame(true);
+        if (roomInforRedux.state === 'finish') setEndGame(true);
         break;
 
       // when user want to play again
@@ -651,18 +546,15 @@ function PlayOnline() {
         };
         dispath(showMessages(infor));
 
-        setRoomInforCopy((preValue) => {
-          const player = getPlayer(preValue, 'id', user?.id);
-          const userName = preValue[player].name;
+        const player = getPlayer(roomInfor, 'id', user?.id);
+        const userName = roomInfor[player].name;
 
-          const playerInfor = {
-            roomID,
-            userName,
-          };
+        const playerInfor = {
+          roomID,
+          userName,
+        };
 
-          socket.emit('offer rematch game', playerInfor);
-          return preValue;
-        });
+        socket.emit('offer rematch game', playerInfor);
         break;
 
       // accept invite rematch game
@@ -683,10 +575,7 @@ function PlayOnline() {
         setEndGame(false);
         reset();
         setControllerSide(<TimeOptions playingOptions={playingOptions} />);
-        setRoomID((preValue) => {
-          socket.emit('start new game', preValue);
-          return preValue;
-        });
+        socket.emit('start new game', roomID);
         playingOptions('play online');
         break;
 
@@ -697,23 +586,20 @@ function PlayOnline() {
       // after opponent denied or received the cancel invitation
       default:
         dispath(showMessages(null));
-
-        if (roomInfor.state) setEndGame(true);
+        if (roomInforRedux.state === 'finish') setEndGame(true);
         break;
     }
-  }
+  }, []);
 
-  function handleFinishGame(option, value = null) {
+  const handleFinishGame = useCallback((option, value = null) => {
     // console.log(option);
-
-    // get room's ID
-    let roomID;
-    setRoomID((preValue) => {
-      roomID = preValue;
-      return preValue;
-    });
+    // get user name
+    let player = getPlayer(roomInfor, 'id', user?.id);
+    let userName = roomInfor[player].name;
+    let data = {};
 
     switch (option) {
+      // offer draw
       case 'offer draw':
         // set information for dialog message when player want to offer a draw
         var infor = {
@@ -728,20 +614,12 @@ function PlayOnline() {
           },
         };
         dispath(showMessages(infor));
-
-        // get user name
-        setRoomInforCopy((preValue) => {
-          const player = getPlayer(preValue, 'id', user?.id);
-          const userName = preValue[player].name;
-          const data = {
-            roomID,
-            userName,
-          };
-          // console.log(data);
-          socket.emit('offer draw', data);
-          return preValue;
-        });
-
+        data = {
+          roomID,
+          userName,
+        };
+        // console.log(data);
+        socket.emit('offer draw', data);
         break;
 
       // offer regisn or abort
@@ -750,24 +628,17 @@ function PlayOnline() {
         handleEndGame(option);
         break;
 
+      // send message
       case 'send message':
-        setRoomInforCopy((preValue) => {
-          const player = getPlayer(preValue, 'id', user?.id);
-          const userName = preValue[player].name;
-          let message = `${userName}: ${value}`;
-
-          const data = {
-            roomID,
-            message,
-          };
-
-          socket.emit('send message', data);
-          return preValue;
-        });
-
+        let message = `${userName}: ${value}`;
+        data = {
+          roomID,
+          message,
+        };
+        socket.emit('send message', data);
         break;
     }
-  }
+  }, []);
 
   return (
     <div className="row align-items-center main_container">
@@ -793,10 +664,7 @@ function PlayOnline() {
               customSquareStyles={{
                 ...optionSquares,
               }}
-              onSquareClick={roomInfor && onSquareClick}
-              // onPromotionPieceSelect={onPromotionPieceSelect}
-              // promotionToSquare={moveTo}
-              // showPromotionDialog={showPromotionDialog}
+              onSquareClick={roomInforRedux && onSquareClick}
             />
 
             {/* show dialog end game */}
@@ -813,12 +681,9 @@ function PlayOnline() {
           </div>
 
           {/* section for show players */}
-          {roomInfor && (
+          {playerOrder && roomInforRedux && pieceType && (
             <div className="col-1 g-0 players">
-              <PlayersSection
-                orderOfPlayer={orderOfPlayer}
-                pieceType={pieceType}
-              />
+              <PlayersSection playerOrder={playerOrder} pieceType={pieceType} />
             </div>
           )}
 

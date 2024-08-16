@@ -1,4 +1,5 @@
 import { useSelector } from 'react-redux';
+import { memo } from 'react';
 
 import './DialogEndGame.css';
 import defAvatar from '../../images/default-avatar.jpg';
@@ -6,7 +7,7 @@ import CustomButton from '../buttons/CustomButton';
 
 function DialogEndGame({ handleOptions }) {
   const roomInfor = useSelector((state) => state.game.roomInfor);
-  // console.log(roomInfor);
+
   return (
     <div className="dialogEndGame">
       <span className="btn-exit" onClick={() => handleOptions('hide dialog')}>
@@ -81,4 +82,4 @@ function DialogEndGame({ handleOptions }) {
   );
 }
 
-export default DialogEndGame;
+export default memo(DialogEndGame);
