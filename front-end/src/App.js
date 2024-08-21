@@ -3,8 +3,8 @@ import { Routes, Route } from 'react-router-dom';
 import HomePage from './components/pages/HomePage/HomePage';
 import SignUp from './components/pages//SignUp/SignUp';
 import SignIn from './components/pages/SignIn/SignIn';
-import PlayOnline from './components/pages/client/PlayOnline/PlayOnline';
-import PlayWithComputer from './components/pages/client/PlayWithComputer/PlayWithComputer';
+import PlayOnline from './components/pages/PlayOnline/PlayOnline';
+import PlayWithComputer from './components/pages/PlayWithComputer/PlayWithComputer';
 
 function App() {
   return (

@@ -1,0 +1,73 @@
+.side-bar {
+  height: 100vh;
+  padding: 5px 15px;
+  font-size: 18px;
+  font-weight: 500;
+  background-color: rgb(44, 43, 41);
+
+  .side-bar__link:not(:first-child) {
+    display: block;
+    width: 100%;
+    margin-bottom: 25px;
+    padding: 10px;
+    text-align: center;
+    text-decoration: none;
+    color: white;
+    background-color: rgb(136, 188, 80);
+    border-radius: 7px;
+    opacity: 0.9;
+
+    .text {
+      margin-left: 10px;
+    }
+  }
+
+  .side-bar__link:not(:first-child):hover {
+    opacity: 1;
+    cursor: pointer;
+  }
+
+  .side-bar__link img {
+    width: 120px;
+    margin-left: -5px;
+    object-fit: cover;
+  }
+
+  .sign-up {
+    margin-bottom: 15px !important;
+    background-color: rgb(70, 68, 65) !important;
+  }
+
+  .side-bar__profile {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    padding: 5px 8px;
+    margin-bottom: 10px;
+    border-radius: 3px;
+    font-size: 17px;
+    color: rgb(228, 228, 228);
+    background-color: rgb(70, 68, 65) !important;
+    opacity: 0.9;
+
+    img {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 10px;
+    }
+
+    .side-bar__profile-name {
+      width: 65px;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}

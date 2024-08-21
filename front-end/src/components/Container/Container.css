@@ -1,0 +1,19 @@
+.main-container {
+  position: relative;
+  width: 100vw;
+  height: fit-content;
+  background-color: rgb(48, 46, 43);
+}
+
+.players {
+  min-height: 553px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.controller_side {
+  border-radius: 10px;
+  background-color: rgb(38, 37, 34);
+}

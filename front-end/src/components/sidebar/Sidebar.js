@@ -4,7 +4,7 @@ import { faGraduationCap } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import './Sidebar.css';
+import './Sidebar.scss';
 import logo from '../../images/chess-game-logo.png';
 import avatar from '../../images/default-avatar.jpg';
 // import { createAxios } from '../../redux/createInstance';
@@ -24,23 +24,23 @@ function Sidebar() {
   }
 
   return (
-    <div className="side_bar">
-      <a className="side_bar-link" href="/">
+    <div className="side-bar">
+      <a className="side-bar__link" href="/">
         <img src={logo} alt="logo" />
       </a>
-      <a className="side_bar-link" href="/play/online">
+      <a className="side-bar__link" href="/play/online">
         <span>
           <FontAwesomeIcon icon={faHandshake} />
         </span>
         <span className="text"> Play</span>
       </a>
-      <a className="side_bar-link" href="/review">
+      <a className="side-bar__link" href="/review">
         <span className="rounded">
           <FontAwesomeIcon icon={faStar} />
         </span>
         <span className="text">Review</span>
       </a>
-      <a className="side_bar-link" href="/learn">
+      <a className="side-bar__link" href="/learn">
         <span>
           <FontAwesomeIcon icon={faGraduationCap} />
         </span>
@@ -48,20 +48,20 @@ function Sidebar() {
       </a>
       {user ? (
         <>
-          <a className="profile" href="/profile">
+          <a className="side-bar__profile" href="/profile">
             <img src={avatar} alt="profile" />
-            <span className="profile_name">{user.user_name}</span>
+            <span className="side-bar__profile-name">{user.user_name}</span>
           </a>
-          <a className="side_bar-link button sign_up" onClick={handleLogout}>
+          <a className="side-bar__link sign-up" onClick={handleLogout}>
             Log Out
           </a>
         </>
       ) : (
         <>
-          <a className="side_bar-link button sign_up" href="/signup">
+          <a className="side-bar__link button sign-up" href="/signup">
             Sign Up
           </a>
-          <a className="side_bar-link button log_in" href="/login">
+          <a className="side-bar__link button log_in" href="/login">
             Log In
           </a>
         </>

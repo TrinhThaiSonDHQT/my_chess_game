@@ -1,0 +1,29 @@
+.header {
+  background: radial-gradient(
+    180% 160% at top center,
+    rgba(0, 0, 0, 0.14) 40%,
+    transparent 0
+  );
+
+  h1 {
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+  }
+
+  .background {
+    text-align: center;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  h1 {
+    font-size: 1.8em;
+  }
+}
+
+@media only screen and (max-width: 576px) {
+  h1 {
+    font-size: 1.4em;
+  }
+}

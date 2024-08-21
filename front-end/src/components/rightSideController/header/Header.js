@@ -1,10 +1,10 @@
-import "./Header.css";
+import styles from './Header.module.scss';
 
 function Header() {
   return (
-    <div className="header">
+    <div className={styles.header}>
       <h1>Play Chess</h1>
-      <div className="background">
+      <div className={styles.background}>
         <svg
           width="90"
           height="90"
