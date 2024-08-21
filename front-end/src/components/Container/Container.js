@@ -1,14 +1,16 @@
-import "bootstrap/dist/css/bootstrap.min.css";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 import Sidebar from '../sidebar/Sidebar';
-import './Container.scss';
+import './Container.css';
 
 function Container({ children }) {
   return (
-    <div className='row align-items-center main_container'>
-      <div className="col-2"><Sidebar /></div>
+    <div className='main-container row align-items-center'>
+      <div className="col-2 d-lg-block d-none">
+        <Sidebar />
+      </div>
 
-      <div className='col-10'>{children}</div>
+      <div className="col-lg-10 col-12">{children}</div>
     </div>
   );
 }

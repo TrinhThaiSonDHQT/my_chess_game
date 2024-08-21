@@ -28,8 +28,8 @@ function TimeOptions({ playingOptions }) {
       <div className="time-options_container">
         {/* tiem options: bullet, blitz, rapid */}
         <div className="time-options">
-          <span className="time-options_icon rocket">
-            <FontAwesomeIcon icon={faRocket} />
+          <span className="rocket">
+            <FontAwesomeIcon icon={faRocket} id='time-options_icon'/>
           </span>
           <span
             className="time-options-buttons"
@@ -52,8 +52,8 @@ function TimeOptions({ playingOptions }) {
         </div>
 
         <div className="time-options">
-          <span className="time-options_icon lightning">
-            <FontAwesomeIcon icon={faBoltLightning} />
+          <span className="lightning">
+            <FontAwesomeIcon icon={faBoltLightning} id='time-options_icon'/>
           </span>
           <span
             className="time-options-buttons"
@@ -76,8 +76,8 @@ function TimeOptions({ playingOptions }) {
         </div>
 
         <div className="time-options">
-          <span className="time-options_icon clock">
-            <FontAwesomeIcon icon={faClock} />
+          <span className="clock">
+            <FontAwesomeIcon icon={faClock} id='time-options_icon'/>
           </span>
           <span
             className="time-options-buttons active"

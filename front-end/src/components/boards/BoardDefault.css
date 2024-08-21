@@ -1,0 +1,15 @@
+.menu {
+  position: absolute;
+  top: -20px;
+  left: 0;
+  display: flex;
+  align-items: start;
+  padding: 5px 20px;
+  margin-top: 20px;
+  background-color: rgb(44, 43, 41);
+  z-index: 2;
+}
+
+.menu__icon {
+  margin-top: 20px;
+}

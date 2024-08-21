@@ -35,7 +35,8 @@
       display: block;
       width: 95%;
       margin: 10px auto;
-      padding: 15px 35px;
+      padding: 15px 0;
+      text-align: center;
       opacity: 0.8;
       color: white;
       background-color: rgb(20, 19, 18);
@@ -47,10 +48,52 @@
         opacity: 1;
       }
 
-      .buttonGroupText p {
-        font-size: 14px;
-        color: rgb(176, 175, 175);
+      .buttonGroupText {
+        p {
+          font-size: 1.2em;
+          color: rgb(176, 175, 175);
+        }
       }
+    }
+  }
+}
+
+@media only screen and (max-width: 1024px) {
+  .buttonGroupText {
+    h2 {
+      font-size: 1.6em;
+    }
+    p {
+      font-size: 1.1em !important;
+    }
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .playingOptionsHeader {
+    h1 {
+      font-size: 1.8em;
+    }
+  }
+  .buttonGroupText {
+    p {
+      font-size: 0.9em !important;
+    }
+  }
+}
+
+@media only screen and (max-width: 576px) {
+  .playingOptionsHeader {
+    h1 {
+      font-size: 1.4em;
+    }
+  }
+  .buttonGroupText {
+    h2 {
+      font-size: 1.15em;
+    }
+    p {
+      font-size: 0.7em !important;
     }
   }
 }

@@ -1,21 +1,25 @@
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import io from 'socket.io-client';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-import '../../../Container/Container.scss';
-import DialogEndGame from '../../../dialogEndGame/DialogEndGame';
-import DialogMessages from '../../../dialogMessages/DialogMessages';
-import TimeOptions from '../../../rightSideController/timeOptions/TimeOptions';
-import Sidebar from '../../../sidebar/Sidebar';
-import HistoriesAndChats from '../../../rightSideController/HistoriesAndChats/HistoriesAndChats';
-import PlayersSection from '../../../players/PlayersSection';
+import '../../Container/Container.css';
+import '../../boards/BoardDefault.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBars, faXmark } from '@fortawesome/free-solid-svg-icons';
+import logo from '../../../images/chess-game-logo.png';
+import DialogEndGame from '../../dialogEndGame/DialogEndGame';
+import DialogMessages from '../../dialogMessages/DialogMessages';
+import TimeOptions from '../../rightSideController/timeOptions/TimeOptions';
+import Sidebar from '../../sidebar/Sidebar';
+import HistoriesAndChats from '../../rightSideController/HistoriesAndChats/HistoriesAndChats';
+import PlayersSection from '../../players/PlayersSection';
 // import { createAxios } from '../../../../redux/createInstance';
 // import { addNewGame } from '../../../../redux/apiRequest';
-import { showMessages, setRoomInfor } from '../../../../redux/gameSlice';
+import { showMessages, setRoomInfor } from '../../../redux/gameSlice';
 
 const socket = io.connect(`http://${process.env.REACT_APP_IP_ADDRESS}:3001`);
 var roomID;
@@ -32,6 +36,8 @@ function PlayOnline() {
   const [isEndGame, setEndGame] = useState(false);
   const [pieceType, setPieceType] = useState(null);
   const [controllerSide, setControllerSide] = useState(null);
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef();
 
   const dispath = useDispatch();
   const navigate = useNavigate();
@@ -215,6 +221,10 @@ function PlayOnline() {
       dispath(setRoomInfor(newRoomInfor));
     });
   }, [socket]);
+
+  const toggleMenu = () => {
+    setShowMenu(!showMenu);
+  };
 
   function setInforToPlayer(data) {
     // console.log(data);
@@ -641,13 +651,60 @@ function PlayOnline() {
   }, []);
 
   return (
-    <div className="row align-items-center main_container">
-      <div className="col-2">
+    <div className="main-container row align-items-center">
+      <div className="col-2 d-lg-block d-none">
         <Sidebar />
       </div>
 
-      <div className="col-10">
-        <div className="row justify-content-around align-items-center">
+      <div className="col-lg-10 col-12">
+        {showMenu && (
+          <div className="menu">
+            {/* turn off menu */}
+            <div className="menu__icon">
+              <FontAwesomeIcon
+                icon={faXmark}
+                size="2xl"
+                style={{ color: '#989795', cursor: 'pointer' }}
+                onClick={toggleMenu}
+                ref={menuRef}
+              />
+            </div>
+
+            <div>
+              <Sidebar />
+            </div>
+          </div>
+        )}
+
+        {/* show menu */}
+        <div
+          className="d-lg-none p-2 d-flex align-items-center"
+          style={{ backgroundColor: 'rgb(44, 43, 41)' }}
+        >
+          <FontAwesomeIcon
+            icon={faBars}
+            size="2xl"
+            style={{
+              color: '#989795',
+              marginRight: '10px',
+              cursor: 'pointer',
+            }}
+            onClick={toggleMenu}
+            ref={menuRef}
+          />
+
+          <div>
+            <a href="/">
+              <img
+                src={logo}
+                alt="logo"
+                style={{ width: '125px', objectFit: 'cover' }}
+              />
+            </a>
+          </div>
+        </div>
+
+        <div className="row justify-content-around align-items-lg-center align-items-start">
           <div className="chessboard col-6 g-0">
             <Chessboard
               id="ClickToMove"

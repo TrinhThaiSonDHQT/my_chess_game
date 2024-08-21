@@ -4,7 +4,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-import Sidebar from '../../../sidebar/Sidebar';
+import Sidebar from '../../sidebar/Sidebar';
 
 const PlayWithComputer = () => {
   const [game, setGame] = useState(new Chess());
@@ -12,13 +12,13 @@ const PlayWithComputer = () => {
   const [moveTo, setMoveTo] = useState(null);
   const [optionSquares, setOptionSquares] = useState({});
 
-  function safeGameMutate(modify) {
-    setGame((g) => {
-      const update = g;
-      modify(update);
-      return update;
-    });
-  }
+  // function safeGameMutate(modify) {
+  //   setGame((g) => {
+  //     const update = g;
+  //     modify(update);
+  //     return update;
+  //   });
+  // }
 
   async function makeRandomMove(square) {
     const possibleMoves = game.moves();
