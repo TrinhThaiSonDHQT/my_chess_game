@@ -1,4 +1,5 @@
-import db from '../models/index';
+import db from '../models/index.js';
+
 const bcrypt = require('bcryptjs');
 
 const checkEmail = async (email) => {
@@ -38,7 +39,7 @@ const handleLogin = async (rawData) => {
         delete user.dataValues.password;
         delete user.dataValues.createdAt;
         delete user.dataValues.updatedAt;
-
+        
         return {
           EM: 'Login successfully',
           EC: 0,
@@ -121,7 +122,7 @@ const handleRegister = async (rawData) => {
   }
 };
 
-module.exports = {
+export default{
   handleLogin,
   handleRegister,
 };

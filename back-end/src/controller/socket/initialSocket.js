@@ -1,4 +1,4 @@
-import socketController from './socketController';
+import socketController from './socketController.js';
 
 const http = require('http');
 const { Server } = require('socket.io');
