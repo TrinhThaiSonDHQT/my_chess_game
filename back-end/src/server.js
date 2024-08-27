@@ -1,12 +1,13 @@
 require('dotenv').config();
 import express from 'express';
 import bodyParser from 'body-parser';
+var cookieParser = require('cookie-parser');
 
-import configViewEngin from './config/viewEngine';
-import initialMainRoutes from './routes/mainRoutes';
-import initialApiRoutes from './routes/apiRoutes';
-import connection from './config/connectDB';
-import initialSocket from './controller/socket/initialSocket';
+import configViewEngin from './config/viewEngine.js';
+import initialMainRoutes from './routes/mainRoutes.js';
+import initialApiRoutes from './routes/apiRoutes.js';
+import connection from './config/connectDB.js';
+import initialSocket from './controller/socket/initialSocket.js';
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -16,12 +17,16 @@ const cors = require('cors');
 app.use(
   cors({
     origin: 'http://localhost:3000',
+    methods: ['POST', 'GET', 'PUT', 'OPTIONS', 'HEAD'],
+    credentials: true,
   })
 );
-
 // apply body-parser
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// apply cookie-parser
+app.use(cookieParser())
 
 // connect to database
 connection();
