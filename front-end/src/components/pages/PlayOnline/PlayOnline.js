@@ -17,9 +17,8 @@ import TimeOptions from '../../rightSideController/timeOptions/TimeOptions';
 import Sidebar from '../../sidebar/Sidebar';
 import HistoriesAndChats from '../../rightSideController/HistoriesAndChats/HistoriesAndChats';
 import PlayersSection from '../../players/PlayersSection';
-// import { createAxios } from '../../../../redux/createInstance';
-// import { addNewGame } from '../../../../redux/apiRequest';
 import { showMessages, setRoomInfor } from '../../../redux/gameSlice';
+import axios from '../../../axios/axiosInstance';
 
 const socket = io.connect(`http://${process.env.REACT_APP_IP_ADDRESS}:3001`);
 var roomID;
@@ -44,14 +43,9 @@ function PlayOnline() {
   const user = useSelector((state) => state.auth.login?.currentUser);
   const messages = useSelector((state) => state.game.messages);
   const roomInforRedux = useSelector((state) => state.game.roomInfor);
-  // const axiosJWT = createAxios(user, dispath, loginSuccess);
 
   useEffect(() => {
-    // direct to login page if the player still not authenticate
-    if (!user) {
-      navigate('/login');
-      return;
-    }
+    checkUserJWT();
 
     // handle when players reconnect or update new information
     if (roomInforRedux != null) {
@@ -221,6 +215,16 @@ function PlayOnline() {
       dispath(setRoomInfor(newRoomInfor));
     });
   }, [socket]);
+
+  const checkUserJWT = async () => {
+    try {
+      await axios.post('api/playonline');
+    } catch (error) {
+      // direct to login page if the player still not authenticate
+      navigate('/login');
+      return;
+    }
+  };
 
   const toggleMenu = () => {
     setShowMenu(!showMenu);
@@ -536,7 +540,7 @@ function PlayOnline() {
       case 'cancel invitation':
         socket.emit('cancel invitation', roomID);
         dispath(showMessages(null));
-        if (roomInforRedux.state === 'finish') setEndGame(true);
+        if (roomInforRedux?.state === 'finish') setEndGame(true);
         break;
 
       // when user want to play again
@@ -596,7 +600,7 @@ function PlayOnline() {
       // after opponent denied or received the cancel invitation
       default:
         dispath(showMessages(null));
-        if (roomInforRedux.state === 'finish') setEndGame(true);
+        if (roomInforRedux?.state === 'finish') setEndGame(true);
         break;
     }
   }, []);
