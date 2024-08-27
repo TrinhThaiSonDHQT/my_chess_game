@@ -1,11 +1,10 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-// import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 import BoardDefault from '../../boards/BoardDefault';
 import Container from '../../Container/Container';
 import { showMessages, setRoomInfor } from '../../../redux/gameSlice';
-import { useNavigate } from 'react-router-dom';
 
 function HomePage() {
   const roomInforRedux = useSelector((state) => state.game.roomInfor);

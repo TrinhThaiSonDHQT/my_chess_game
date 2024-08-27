@@ -1,5 +1,4 @@
 import axios from 'axios';
-
 const ipAddress = process.env.REACT_APP_IP_ADDRESS;
 
 // Set config defaults when creating the instance
@@ -7,19 +6,18 @@ const instance = axios.create({
   baseURL: `http://${ipAddress}:8080/`,
 });
 
+instance.defaults.withCredentials = true;
+
 // Alter defaults after instance has been created
 // instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 
 // Add a request interceptor
 instance.interceptors.request.use(
-  function (config) {
-    // Do something before request is sent
+  // Do something before request is sent
+  async (config) => {   
     return config;
   },
-  function (error) {
-    // Do something with request error
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 // Add a response interceptor
